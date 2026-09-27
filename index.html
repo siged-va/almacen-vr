@@ -357,7 +357,8 @@ tr.cur td{color:var(--label)}
       <li><b>Altura del visor:</b> al entrar en VR la altura se corrige sola si el visor la toma mal (por ejemplo, si el estudiante está sentado): se ve el almacén como una persona de pie. Si aun así el piso se ve alto o bajo, ponerse de pie derecho y pulsar el botón <b>A</b> (control derecho) o <b>X</b> (control izquierdo).</li>
       <li><b>Confirmar lo que queda:</b> al completar cada línea aparece al frente, un poco más abajo de la vista, el teclado de <i>¿Cuántas cajas quedan?</i>. Al responder desaparece, y se repite en cada línea.</li>
       <li><b>Enfardadora:</b> a la derecha, frente al estante 006. Baja el palet sobre la plataforma amarilla y pulsa <b>ENVOLVER</b>. El palet queda protegido con film y etiquetado.</li>
-      <li><b>Camión:</b> engancha otra vez el palet, pulsa <b>ABRIR</b> en el panel azul junto al portón del muelle y deja el palet dentro del camión. Ahí termina el tiempo.</li>
+      <li><b>Camión:</b> engancha otra vez el palet, pulsa <b>ABRIR</b> en el panel azul junto al portón del muelle y deja el palet dentro del camión.</li>
+      <li><b>Cierre:</b> sal del camión, pulsa <b>▼ CERRAR</b> en el panel del portón y lleva la transpaleta a la <b>zona azul de transpaletas</b> (junto a la entrada, puesto T-1); pulsa la transpaleta para soltarla allí. Con el portón cerrado y la transpaleta estacionada termina el tiempo.</li>
     </ol>
 
     <h3>Señalización del almacén (para comentar en clase)</h3>
@@ -418,7 +419,7 @@ tr.cur td{color:var(--label)}
 
     <h3>Controles</h3>
     <dl class="ctl">
-      <dt>Visor VR</dt><dd>Gatillo sobre el piso: desplazarte. Gatillo sobre una caja: tomarla. Joystick derecho a los lados: girar 30°. La orden aparece sobre tu mano izquierda . Además, la pantalla gigante de la pared delantera (entre la oficina y la entrada) muestra la orden, el tiempo y el avance.</dd>
+      <dt>Visor VR</dt><dd>Gatillo sobre el piso: desplazarte. Gatillo sobre una caja: tomarla. Joystick derecho a los lados: girar 30°. La orden aparece sobre tu mano izquierda . Además, la pantalla gigante de la pared delantera (entre la oficina y la entrada) muestra la orden, el tiempo y el avance, y tiene los mismos seis botones.</dd>
       <dt>PC</dt><dd>Arrastrar: mirar. W A S D o flechas: caminar. Clic en el piso: desplazarte. Clic en una caja: tomarla.</dd>
       <dt>Celular</dt><dd>Arrastrar: mirar. Tocar el piso: desplazarte. Tocar una caja: tomarla.</dd>
     </dl>
@@ -788,9 +789,18 @@ const bigScreen = new THREE.Group(); bigScreen.position.set(-3.95, 3.05, 6.55); 
   const sw = 4.8, sh = sw * BS_H / BS_W;
   const bezel = new THREE.Mesh(new THREE.BoxGeometry(sw + 0.16, sh + 0.16, 0.1), new THREE.MeshLambertMaterial({ color: '#15181c' }));
   const face = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map: bigTex }));
-  face.position.z = 0.052; bigScreen.add(bezel, face); blockers.push(bezel, face);
+  face.position.z = 0.052; bigScreen.add(bezel, face); blockers.push(bezel); face.userData.action = 'bigui'; actionables.push(face);
   const led = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.02, 0.01), new THREE.MeshBasicMaterial({ color: '#3fb96b' })); led.position.set(sw / 2 - 0.1, -sh / 2 - 0.05, 0.055); bigScreen.add(led);
   for (const x of [-1.4, 1.4]) { const br = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.08), new THREE.MeshLambertMaterial({ color: '#2b2f33' })); br.position.set(x, 0, -0.07); bigScreen.add(br); }
+}
+const BIG_BTNS = [], BIG_ROWS = [];
+function bigHitAt(uv) {
+  if (!uv) return null;
+  const x = uv.x * BS_W, y = (1 - uv.y) * BS_H;
+  const b = BIG_BTNS.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+  if (b) return { btn: b };
+  const r = BIG_ROWS.find(r => x >= r.x && x <= r.x + r.w && y >= r.y && y < r.y + r.h);
+  return r && r.click ? { row: r.line } : null;
 }
 function drawBigScreen() {
   const g = bigTex.userData.ctx, W = BS_W, H = BS_H, o = state.order, a = ACT(); if (!o) return;
@@ -815,26 +825,35 @@ function drawBigScreen() {
   const done = linesDone(), total = o.lines.length;
   const tiles = [['TIEMPO', fmtTime(curTime()), '#fff'], ['DISTANCIA', fmtNum(state.distance, 0) + ' m', '#fff'], ['ERRORES', String(state.errors), state.errors ? '#ef5350' : '#fff'], ['LÍNEAS', `${done}/${total}`, done === total ? '#3fb96b' : '#fff']];
   tiles.forEach(([lab, val, col], i) => {
-    const x = LX + (i % 2) * 240, y = 350 + Math.floor(i / 2) * 170;
-    rr(g, x, y, 225, 150, 14); g.fillStyle = '#18202a'; g.fill();
-    g.fillStyle = '#98a3ae'; g.font = `600 26px ${FC}`; g.fillText(lab, x + 20, y + 40);
-    g.fillStyle = col; g.font = `700 70px ${FC}`; g.fillText(val, x + 20, y + 118);
+    const x = LX + (i % 2) * 240, y = 318 + Math.floor(i / 2) * 118;
+    rr(g, x, y, 225, 106, 12); g.fillStyle = '#18202a'; g.fill();
+    g.fillStyle = '#98a3ae'; g.font = `600 22px ${FC}`; g.fillText(lab, x + 18, y + 32);
+    g.fillStyle = col; g.font = `700 54px ${FC}`; g.fillText(val, x + 18, y + 90);
   });
-  // barra de avance
-  const py = 715; rr(g, LX, py, 465, 26, 13); g.fillStyle = '#18202a'; g.fill();
-  if (total) { rr(g, LX, py, Math.max(26, 465 * done / total), 26, 13); g.fillStyle = '#3fb96b'; g.fill(); }
-  g.fillStyle = '#98a3ae'; g.font = `600 24px ${FC}`; g.fillText(`AVANCE ${total ? Math.round(done / total * 100) : 0} %`, LX, py + 60);
-  // estado
+  // barra de avance y estado
+  const py = 560; rr(g, LX, py, 300, 22, 11); g.fillStyle = '#18202a'; g.fill();
+  if (total) { rr(g, LX, py, Math.max(22, 300 * done / total), 22, 11); g.fillStyle = '#3fb96b'; g.fill(); }
+  g.fillStyle = '#98a3ae'; g.font = `600 22px ${FC}`; g.fillText(`AVANCE ${total ? Math.round(done / total * 100) : 0} %`, LX + 314, py + 19);
   const st = state.cancelled ? ['CANCELADA', '#6e1814', '#fff'] : state.paused ? ['EN PAUSA', '#5c4800', '#f5c518'] : state.done ? [a.doneTitle, '#123c22', '#fff'] : state.started ? ['EN CURSO', '#10284a', '#9fc3ff'] : ['LISTO PARA INICIAR', '#18202a', '#b8c2cc'];
-  rr(g, LX, 800, 465, 70, 12); g.fillStyle = st[1]; g.fill();
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = st[2]; g.font = `700 40px ${FC}`; g.fillText(fitText(g, st[0], 440), LX + 232, 836);
+  rr(g, LX, 598, 465, 56, 10); g.fillStyle = st[1]; g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = st[2]; g.font = `700 34px ${FC}`; g.fillText(fitText(g, st[0], 440), LX + 232, 627);
+  // botones (los mismos de la hoja de la orden)
+  BIG_BTNS.length = 0;
+  const bgap = 10, bw = (465 - 2 * bgap) / 3, bh = 100;
+  uiDefs().forEach((d, i) => {
+    const x = LX + (i % 3) * (bw + bgap), y = 672 + Math.floor(i / 3) * (bh + bgap);
+    drawUiBtn(g, d, x, y, bw, bh, 34);
+    BIG_BTNS.push({ id: d.id, x, y, w: bw, h: bh, on: d.on });
+  });
   // líneas de la orden en dos columnas
   const RX = 540, RW = W - RX - 28, colW = (RW - 24) / 2, n = o.lines.length, perCol = Math.max(1, Math.ceil(n / 2));
   const top = 120, rh = Math.min(104, (H - top - 24) / perCol), fs = Math.min(1, rh / 96);
+  BIG_ROWS.length = 0;
   o.lines.forEach((l, i) => {
     const v = a.view(l), col = Math.floor(i / perCol), r = i % perCol;
     const x = RX + col * (colW + 24), y = top + r * rh, cy = y + rh / 2, dn = v.done;
-    rr(g, x, y + 4, colW, rh - 8, 10); g.fillStyle = dn ? '#12281b' : r % 2 ? '#141b23' : '#18202a'; g.fill();
+    BIG_ROWS.push({ x, y, w: colW, h: rh, line: l, click: v.click });
+    rr(g, x, y + 4, colW, rh - 8, 10); g.fillStyle = v.click ? 'rgba(245,197,24,.18)' : dn ? '#12281b' : r % 2 ? '#141b23' : '#18202a'; g.fill();
     const s = 30 * fs; g.lineWidth = 4; g.strokeStyle = v.bad ? '#ef5350' : dn ? '#3fb96b' : '#56606b'; g.fillStyle = v.bad ? '#ef5350' : '#3fb96b';
     rr(g, x + 14, cy - s / 2, s, s, 6); dn ? g.fill() : g.stroke();
     if (dn && !v.bad) { g.strokeStyle = '#0d1a12'; g.beginPath(); g.moveTo(x + 14 + s * .22, cy); g.lineTo(x + 14 + s * .42, cy + s * .22); g.lineTo(x + 14 + s * .8, cy - s * .22); g.stroke(); }
@@ -2031,6 +2050,8 @@ function updateDoor(dt) {
   const bottom = door.open * (DOCK.h - 0.3), h = DOCK.h - bottom;
   dockDoor.scale.y = Math.max(0.02, h / DOCK.h); dockDoor.position.y = bottom + h / 2;
   if (eng2) eng2();
+  const o = state.order;
+  if (door.open < 1e-3 && door.target === 0 && o && o.v10 && o.loaded && !o.doorClosed) { o.doorClosed = true; say('Portón cerrado. Estaciona la transpaleta en su zona', 'ok'); renderOrder(); drawOrderCanvas(); tryFinishV10(); }
 }
 let eng2 = null;
 
@@ -2382,6 +2403,23 @@ const tHandle = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 6, 16), jac
 mbox(0.04, 0.012, 0.05, 0, 0.8, 0.02, jackRed, tillerG);
 jackG.traverse(m => { if (m.isMesh) { m.userData.action = 'jack'; actionables.push(m); } });
 const jack = { x: 1.6, z: 4.0, h: 0, held: false, P: null };
+/* Zona de estacionamiento de transpaletas (frente, junto a la pared delantera) */
+const JP = { x: 1.5, z: 5.2, h: Math.PI };
+const JZONE = { x0: 0.95, x1: 4.15, z0: 4.3, z1: 6.55 };
+decal(3.1, 2.05, 2.55, 5.45, canvasTex(460, 304, (g, w, h) => {
+  g.clearRect(0, 0, w, h); g.fillStyle = 'rgba(21,101,192,.14)'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#1565c0'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
+  g.strokeStyle = '#fff'; g.lineWidth = 5; for (let k = 1; k < 4; k++) { const x = w * k / 4; g.beginPath(); g.moveTo(x, 40); g.lineTo(x, h - 70); g.stroke(); }
+  ['T-1', 'T-2', 'T-3', 'T-4'].forEach((t, k) => centerText(g, t, w * (k + 0.5) / 4, 60, `700 30px ${FONT_C}`, '#fff'));
+  g.fillStyle = '#1565c0'; g.fillRect(w * 0.06, h - 62, w * 0.88, 50); centerText(g, 'TRANSPALETAS', w / 2, h - 36, `700 36px ${FONT_C}`, '#fff');
+}), Math.PI);
+wallSign(0.85, 0.42, 3.55, 1.5, FZ - 0.115, Math.PI, 300, 148, (g, w, h) => { g.fillStyle = '#1565c0'; g.fillRect(0, 0, w, h); centerText(g, 'ESTACIONAMIENTO', w / 2, 48, `700 36px ${FONT_C}`, '#fff'); centerText(g, 'TRANSPALETAS', w / 2, 102, `700 40px ${FONT_C}`, '#f2c200'); });
+for (const x of [2.3, 3.1, 3.9]) { const c = jackG.clone(); c.position.set(x, 0, JP.z); c.rotation.y = JP.h; scene.add(c); obst(x - 0.3, x + 0.3, JP.z - 0.7, JP.z + 1.25).pal = true; }
+function jackInZone() { const b = l2w(0, -0.4, jack, jack.h); return b.x > JZONE.x0 && b.x < JZONE.x1 && b.z > JZONE.z0 && b.z < JZONE.z1; }
+function tryFinishV10() {
+  const o = state.order; if (!o || !o.v10 || state.done) return;
+  if (o.loaded && o.doorClosed && o.parked) { if (!state.prompt) finishTask(); else o.finishWhenFree = true; }
+}
 const gridTex = canvasTex(128, 96, (g, w, h) => { g.strokeStyle = '#69f0ae'; g.lineWidth = 3; for (let x = 0; x <= w; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y <= h; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } });
 const secureGrid = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), new THREE.MeshBasicMaterial({ map: gridTex, transparent: true, opacity: 0.9 }));
 secureGrid.rotation.x = -Math.PI / 2; secureGrid.visible = false; scene.add(secureGrid);
@@ -2456,8 +2494,7 @@ function lowerPallet() {
   } else if (c.x > TRUCK.x0 - 0.3 && c.x < TRUCK.x1 + 0.3 && c.z > TRUCK.z0 && c.z < TRUCK.z1 + 0.3) {
     if (!P.wrapped) { say('Antes de cargarlo, protege el palet en la enfardadora', 'err'); return; }
     Object.assign(P, { y: 0.05, attached: false }); setLoad(P); jack.P = null; o.loaded = true;
-    say('Pedido cargado en el camión', 'ok'); renderOrder(); drawOrderCanvas();
-    if (!state.prompt) finishTask(); else o.finishWhenFree = true;
+    say('Pedido cargado. Cierra el portón y estaciona la transpaleta', 'ok'); renderOrder(); drawOrderCanvas();
     return;
   } else { Object.assign(P, { y: 0, attached: false }); setLoad(P); jack.P = null; say('Palet bajado al piso', 'info'); }
   renderOrder(); drawOrderCanvas();
@@ -2468,8 +2505,17 @@ function jackClick() {
   if (!jack.held) {
     if (Math.hypot(hd.x - jack.x, hd.z - jack.z) > 3) { say('Acércate a la transpaleta', 'info'); return; }
     jack.held = true; ensureStart(); jackFollow(true); jackSync(); say('Tomaste la transpaleta', 'ok');
+    if (state.order && state.order.parked) state.order.parked = false;
   } else if (jack.P) lowerPallet();
-  else { jack.held = false; say('Soltaste la transpaleta', 'info'); }
+  else {
+    jack.held = false; jack.tx = null;
+    const o = state.order;
+    if (o && o.v10 && jackInZone()) {
+      Object.assign(jack, { x: JP.x, z: JP.z, h: JP.h }); jackSync();
+      if (o.loaded) { o.parked = true; say('Transpaleta estacionada en su lugar (T-1)', 'ok'); tryFinishV10(); }
+      else say('Transpaleta devuelta a su lugar', 'info');
+    } else say(o && o.v10 && o.loaded ? 'Soltaste la transpaleta. Estaciónala en la zona de transpaletas' : 'Soltaste la transpaleta', 'info');
+  }
   renderOrder(); drawOrderCanvas();
 }
 function palletClick(P) {
@@ -2498,6 +2544,13 @@ function wrapSound() {
 }
 function doorClick(hit) {
   const uv = hit && hit.uv; const up = !uv || uv.y > 0.45;
+  if (!up) {
+    const hd = head(), inDock = (x, z) => x > DOCK.x0 - 0.3 && x < DOCK.x1 + 0.3 && z > FZ - 0.5;
+    if (inDock(hd.x, hd.z)) { say('Sal del camión antes de cerrar el portón', 'err'); return; }
+    const jb = jackPalletPt();
+    if (jackG.visible && (inDock(jack.x, jack.z) || inDock(jb.x, jb.z))) { say('Retira la transpaleta del muelle antes de cerrar', 'err'); return; }
+  }
+  if (up && state.order && state.order.doorClosed) state.order.doorClosed = false;
   door.target = up ? 1 : 0; drawDoorBtn(); say(up ? 'Abriendo el portón' : 'Cerrando el portón', 'info');
   if (actx) { const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain(); o.type = 'square'; o.frequency.value = 70; g.gain.setValueAtTime(0.05, t); g.gain.setValueAtTime(0.0001, t + 3); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 3); }
 }
@@ -2669,22 +2722,24 @@ Object.assign(pick1, {
     const prods = randomLocs(ORDER_LINES).map(L => ({ loc: L, qty: rnd(1, 3), picked: 0 }));
     hiddenDiffs(prods, rnd(2, 3), 1);
     prods.forEach(l => l.sys = l.loc.sysStock);
-    const o = { title: pickOne(CLIENTS), v10: true, printed: false, paper: false, wrapped: false, loaded: false };
-    o.lines = [{ step: 'print' }, ...prods, { step: 'wrap' }, { step: 'truck' }];
+    const o = { title: pickOne(CLIENTS), v10: true, printed: false, paper: false, wrapped: false, loaded: false, doorClosed: false, parked: false };
+    o.lines = [{ step: 'print' }, ...prods, { step: 'wrap' }, { step: 'truck' }, { step: 'door' }, { step: 'park' }];
     o.pallet = makeV10Pallet(1.6, 2.6);
-    Object.assign(jack, { x: 1.6, z: 3.95, h: 0, held: false, P: null, tx: null, anchor: null });
+    Object.assign(jack, { x: JP.x, z: JP.z, h: JP.h, held: false, P: null, tx: null, anchor: null });
     door.target = 0; door.open = 0.001; drawDoorBtn();
     return o;
   },
   meta: o => {
     const prods = o.lines.filter(l => l.loc);
-    const next = !o.paper ? 'Siguiente: imprimir la orden en la oficina' : jack.P !== o.pallet && !prods.every(l => l.picked >= l.qty) ? 'Siguiente: cargar el palet vacío en la transpaleta' : !prods.every(l => l.picked >= l.qty) ? 'Siguiente: preparar las líneas' : !o.wrapped ? 'Siguiente: envolver en la enfardadora' : 'Siguiente: abrir el portón y cargar el camión';
+    const next = !o.paper ? 'Siguiente: imprimir la orden en la oficina' : jack.P !== o.pallet && !prods.every(l => l.picked >= l.qty) ? 'Siguiente: cargar el palet vacío en la transpaleta' : !prods.every(l => l.picked >= l.qty) ? 'Siguiente: preparar las líneas' : !o.wrapped ? 'Siguiente: envolver en la enfardadora' : !o.loaded ? 'Siguiente: abrir el portón y cargar el camión' : !o.doorClosed ? 'Siguiente: cerrar el portón del muelle' : !o.parked ? 'Siguiente: estacionar la transpaleta' : 'Pedido despachado';
     return `${prods.length} líneas · ${prods.reduce((s, l) => s + l.qty, 0)} cajas · ${next}`;
   },
   view(l) {
     const o = state.order;
     if (l.step === 'print') return { chip: 'OFICINA', chipBg: '#9fc3ff', title: 'Imprimir la orden de picking', sub: 'Impresora de la oficina', sub2: o.paper ? 'Orden en la mano' : o.printed ? 'Tómala de la impresora' : 'Pulsa la impresora', right: o.paper ? '✓' : '—', done: o.paper };
     if (l.step === 'wrap') return { chip: 'ENFARDADORA', chipBg: '#ffe08a', title: 'Proteger y etiquetar', sub: 'Plataforma amarilla, a la derecha', sub2: o.wrapped ? 'Listo' : 'Palet sobre la plataforma → ENVOLVER', right: o.wrapped ? '✓' : '—', done: o.wrapped };
+    if (l.step === 'door') return { chip: 'PORTÓN', chipBg: '#c9ffd9', title: 'Cerrar el portón del muelle', sub: 'Botón ▼ CERRAR, junto al portón', sub2: o.doorClosed ? 'Cerrado' : o.loaded ? 'Sal del camión y cierra' : 'Después de cargar', right: o.doorClosed ? '✓' : '—', done: o.doorClosed };
+    if (l.step === 'park') return { chip: 'TRANSPALETAS', chipBg: '#9fc3ff', title: 'Estacionar la transpaleta', sub: 'Zona azul T-1, junto a la entrada', sub2: o.parked ? 'Estacionada' : 'Déjala en su lugar', right: o.parked ? '✓' : '—', done: o.parked };
     if (l.step === 'truck') return { chip: 'CAMIÓN', chipBg: '#c9ffd9', title: 'Cargar el camión', sub: 'Abre el portón del muelle', sub2: o.loaded ? 'Cargado' : 'Deja el palet dentro del camión', right: o.loaded ? '✓' : '—', done: o.loaded };
     if (!o.paper) return { chip: '· · ·', title: 'Pendiente de imprimir', sub: '', sub2: '', right: '—', done: false };
     return pickView(l, `${!l.scanned && l.picked < l.qty ? '▣ Escanear ubicación · ' : ''}Sist.: ${l.sys} cajas${l.counted != null ? ` · contó ${l.counted}` : ''}`);
@@ -2702,7 +2757,7 @@ Object.assign(pick1, {
     const cn = state.counts.length, ok = countOk(), acc = pct(state.correct, state.correct + state.errors), lph = lphOf(prods.length, t);
     const adj = state.counts.filter(c => c.ok && c.real !== c.expected);
     return {
-      tiles: [['Tiempo', fmtTime(t), 'de la entrada al camión'], ['Distancia', fmtNum(state.distance, 0) + ' m', 'desde el primer paso'], ['Errores', String(state.errors), `${state.scanErr || 0} de escaneo`],
+      tiles: [['Tiempo', fmtTime(t), 'de la entrada al cierre'], ['Distancia', fmtNum(state.distance, 0) + ' m', 'desde el primer paso'], ['Errores', String(state.errors), `${state.scanErr || 0} de escaneo`],
         ['Conteo', `${ok}/${cn}`, `exactitud ${pct(ok, cn)} %`], ['Exactitud', acc + ' %', 'cajas correctas'], ['Productividad', fmtNum(lph, 0), 'líneas por hora']],
       table: adj.length ? '<div class="h3">Ajustes de inventario</div>' + table(['Ubicación', 'Artículo', 'Esperado', 'Físico', 'Ajuste'], adj.map(a => [a.code, esc(a.name), a.expected, a.real, (a.real - a.expected > 0 ? '+' : '') + (a.real - a.expected)])) : '',
       ind: `${o.sort === 'route' ? 'Ruta' : 'Desordenada'} · ${fmtNum(lph, 0)} líneas/h`
@@ -2994,6 +3049,28 @@ const UI_BTNS = [];
 function drawUiButtons(g, W) {
   const tops = [646, 730], h = 76, gap = 8, x0 = 12, bw = (W - 2 * x0 - 2 * gap) / 3;
   g.fillStyle = '#2a313a'; g.fillRect(24, 636, W - 48, 2);
+  const defs = uiDefs();
+  UI_BTNS.length = 0;
+  defs.forEach((d, i) => {
+    const x = x0 + (i % 3) * (bw + gap), top = tops[Math.floor(i / 3)];
+    drawUiBtn(g, d, x, top, bw, h, 26);
+    UI_BTNS.push({ id: d.id, x, y: top, w: bw, h, on: d.on });
+  });
+  g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+}
+function drawUiBtn(g, d, x, top, bw, h, fmax) {
+  rr(g, x, top, bw, h, 10);
+  g.fillStyle = d.on ? d.bg : '#1d2228'; g.fill();
+  if (!d.on) { g.lineWidth = 2; g.strokeStyle = '#2f3740'; g.stroke(); }
+  g.fillStyle = d.on ? d.fg : (d.offFg || '#56606b');
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  let fsz = fmax;
+  do { g.font = `700 ${fsz}px "Barlow Condensed", Arial, sans-serif`; } while (fsz-- > 12 && Math.max(...d.lines.map(t => g.measureText(t).width)) > bw - 12);
+  const cy = top + h / 2, off = fsz * 0.58;
+  if (d.lines.length === 1) g.fillText(d.lines[0], x + bw / 2, cy + 1);
+  else { g.fillText(d.lines[0], x + bw / 2, cy - off); g.fillText(d.lines[1], x + bw / 2, cy + off); }
+}
+function uiDefs() {
   const a = ACT(), active = !!state.order && !state.done;
   const route = state.order && state.order.sort === 'route';
   const defs = [
@@ -3004,22 +3081,7 @@ function drawUiButtons(g, W) {
     { id: 'acts', lines: ['OTRA', 'ACTIVIDAD'], on: true, bg: '#2d63b3', fg: '#fff' },
     { id: 'exit', lines: isArmed('exit') ? ['¿SALIR?', 'OTRA VEZ'] : ['SALIR DEL', 'ALMACÉN'], on: true, bg: isArmed('exit') ? '#d32f2f' : '#5a1f1c', fg: '#fff' }
   ];
-  UI_BTNS.length = 0;
-  defs.forEach((d, i) => {
-    const x = x0 + (i % 3) * (bw + gap), top = tops[Math.floor(i / 3)];
-    rr(g, x, top, bw, h, 10);
-    g.fillStyle = d.on ? d.bg : '#1d2228'; g.fill();
-    if (!d.on) { g.lineWidth = 2; g.strokeStyle = '#2f3740'; g.stroke(); }
-    g.fillStyle = d.on ? d.fg : (d.offFg || '#56606b');
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    let fsz = 26;
-    do { g.font = `700 ${fsz}px "Barlow Condensed", Arial, sans-serif`; } while (fsz-- > 12 && Math.max(...d.lines.map(t => g.measureText(t).width)) > bw - 12);
-    const cy = top + h / 2;
-    if (d.lines.length === 1) g.fillText(d.lines[0], x + bw / 2, cy + 1);
-    else { g.fillText(d.lines[0], x + bw / 2, cy - 14); g.fillText(d.lines[1], x + bw / 2, cy + 16); }
-    UI_BTNS.push({ id: d.id, x, y: top, w: bw, h, on: d.on });
-  });
-  g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+  return defs;
 }
 function uiHitAt(uv) {
   if (!uv) return null;
@@ -3288,6 +3350,7 @@ function classify(hit) {
   if (o.userData.loc) return { type: 'box', loc: o.userData.loc, hit };
   if (o.userData.recv) return { type: 'recv', slot: o.userData.recv, hit };
   if (o.userData.action === 'count') { const b = countButtonAt(hit.uv); return b ? { type: 'countbtn', btn: b, hit } : { type: 'block', hit }; }
+  if (o.userData.action === 'bigui') { const u = bigHitAt(hit.uv); return u ? (u.btn ? { type: 'ui', btn: u.btn, hit } : { type: 'row', line: u.row, hit }) : { type: 'block', hit }; }
   if (o.userData.action === 'ui') { const u = uiHitAt(hit.uv); return u ? (u.btn ? { type: 'ui', btn: u.btn, hit } : { type: 'row', line: u.row, hit }) : { type: 'block', hit }; }
   if (o.userData.action) return { type: o.userData.action, hit };
   if (o.userData.floorBox) return { type: 'floorBox', hit };
