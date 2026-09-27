@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almacén Escuela VR 10.2</title>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almacén Escuela VR 10.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -220,7 +220,7 @@ tr.cur td{color:var(--label)}
     <div class="brand">
       <div class="mark" aria-hidden="true"><i class="u1"></i><i class="u2"></i><i class="b1"></i><i class="b2"></i></div>
       <div>
-        <div class="name">Almacén Escuela VR 10.2</div>
+        <div class="name">Almacén Escuela VR 10.3</div>
         <div class="sub" id="subTitle">Gestión de Almacén y Control de Inventario</div>
       </div>
     </div>
@@ -352,12 +352,22 @@ tr.cur td{color:var(--label)}
       <li><b>Entrada:</b> el estudiante aparece en el patio, frente al portón LOGISTEM. Camina hasta la puerta <b>ENTRADA</b> del edificio.</li>
       <li><b>Oficina:</b> al fondo a la izquierda de la entrada (se entra por su puerta lateral). Apunta a la impresora (sobre el escritorio) y pulsa; cuando la hoja sale, la toma. Hasta entonces la orden no muestra los artículos.</li>
       <li><b>Transpaleta:</b> apunta a la transpaleta roja para tomarla y luego al palet vacío para engancharlo: aparece la rejilla verde de <i>carga asegurada</i>. La transpaleta va <b>delante</b> del estudiante cuando se desplaza (joystick, teletransporte o teclado). Al girar o dar pasos reales con el visor se queda quieta, así puede voltearse al estante y acercarse al palet para dejar las cajas. Pulsar la transpaleta otra vez baja el palet donde estés.</li>
+      <li><b>Escanear la ubicación:</b> como con un escáner de radiofrecuencia, antes de tomar las cajas de una línea hay que apuntar a su <b>etiqueta amarilla</b> (en la viga o en el piso para el nivel 1) y pulsar. Si es la correcta suena la confirmación y la línea queda liberada; si es otra ubicación cuenta como <b>error de escaneo</b>. En el visor, el control derecho se ve como un escáner amarillo.</li>
       <li><b>Tomar cajas con las manos:</b> en el visor se acerca la mano a la caja (la ubicación se ilumina) y se agarra con el <b>botón de agarre</b> del costado del control o con el <b>gatillo</b>; se lleva hasta el palet y se suelta encima. Funciona con las dos manos a la vez. Sin controles, con el <b>seguimiento de manos</b> del Quest, se agarra haciendo la pinza (índice y pulgar). Una caja que se suelta lejos del palet cae al piso y hay que recogerla. Con el gatillo lejos de las cajas se sigue usando como puntero; en la PC basta un clic.</li>
       <li><b>Altura del visor:</b> al entrar en VR la altura se corrige sola si el visor la toma mal (por ejemplo, si el estudiante está sentado): se ve el almacén como una persona de pie. Si aun así el piso se ve alto o bajo, ponerse de pie derecho y pulsar el botón <b>A</b> (control derecho) o <b>X</b> (control izquierdo).</li>
       <li><b>Confirmar lo que queda:</b> al completar cada línea aparece al frente, un poco más abajo de la vista, el teclado de <i>¿Cuántas cajas quedan?</i>. Al responder desaparece, y se repite en cada línea.</li>
       <li><b>Enfardadora:</b> a la derecha, frente al estante 006. Baja el palet sobre la plataforma amarilla y pulsa <b>ENVOLVER</b>. El palet queda protegido con film y etiquetado.</li>
       <li><b>Camión:</b> engancha otra vez el palet, pulsa <b>ABRIR</b> en el panel azul junto al portón del muelle y deja el palet dentro del camión. Ahí termina el tiempo.</li>
     </ol>
+
+    <h3>Señalización del almacén (para comentar en clase)</h3>
+    <ul>
+      <li><b>Zonas pintadas en el piso:</b> Recepción (azul), Preparación (morado), Expedición (verde), Enfardado (naranja), Zona de carga del muelle (rayado amarillo) y pasillo peatonal verde de la entrada a la oficina.</li>
+      <li><b>Circulación:</b> letreros colgantes PASILLO 1, 2 y 3 con los estantes de cada uno, líneas de PARE al salir de cada pasillo, velocidad máxima 10 km/h y paso peatonal en la entrada.</li>
+      <li><b>Estanterías:</b> placa de carga máxima en cada estante, protectores de columna amarillo y negro, y etiqueta con código de barras en cada ubicación.</li>
+      <li><b>Seguridad y emergencias:</b> extintores, manguera contra incendios, botiquín, ruta de evacuación, SALIDA con luz de emergencia, riesgo eléctrico, prohibido fumar, precaución montacargas, EPP obligatorio (chaleco y calzado), tablero de días sin accidentes y punto de reunión en el patio.</li>
+      <li><b>Orden y ambiente:</b> tablero de las 5S, contenedores de reciclaje (cartón, plástico/film, general), pila de palets vacíos, muelle 1 con niveladora y topes, y aviso de solo personal autorizado.</li>
+    </ul>
 
     <h3>Cómo se maneja el montacargas</h3>
     <dl class="ctl">
@@ -721,8 +731,8 @@ for (const e of ESTANTES) {
         b.rotation.y = yaw;
         b.userData.loc = L; b.visible = false; scene.add(b); L.meshes.push(b); boxMeshes.push(b);
       }
-      if (level === 1) addLabel(code, e.face + e.dir * 0.34, 0.012, mz, true, yaw);
-      else addLabel(code, e.face + e.dir * 0.002, BEAMS[level - 2], mz, false, yaw);
+      const lab = level === 1 ? addLabel(code, e.face + e.dir * 0.34, 0.012, mz, true, yaw) : addLabel(code, e.face + e.dir * 0.002, BEAMS[level - 2], mz, false, yaw);
+      lab.userData.action = 'scan'; lab.userData.scanLoc = L; lab.userData.flat = level === 1; actionables.push(lab); L.label = lab;
       LOCS.push(L);
     });
   });
@@ -2187,6 +2197,104 @@ function updateWrap(dt) {
   }
 }
 
+/* ================= Señalización completa del almacén ================= */
+const FONT_C = '"Barlow Condensed", Arial, sans-serif', FONT_B = '"Barlow", Arial, sans-serif';
+function decal(w, h, x, z, tex, ry = 0, y = 0.005) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.rotation.z = ry; m.position.set(x, y, z); scene.add(m); return m; }
+function wallSign(w, h, x, y, z, ry, pw, ph, draw) { return mplane(w, h, x, y, z, ry, new THREE.MeshBasicMaterial({ map: canvasTex(pw, ph, draw) })); }
+function centerText(g, t, x, y, font, color) { g.font = font; g.fillStyle = color; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, x, y); }
+function warnTri(g, cx, cy, r) { g.beginPath(); g.moveTo(cx, cy - r); g.lineTo(cx + r * 0.95, cy + r * 0.7); g.lineTo(cx - r * 0.95, cy + r * 0.7); g.closePath(); g.fillStyle = '#f2c200'; g.fill(); g.lineWidth = r * 0.12; g.strokeStyle = '#111'; g.stroke(); }
+
+/* 1. Zonas pintadas en el piso (demarcación por colores) */
+function zoneTex(pw, ph, color, label, hatch) {
+  return canvasTex(pw, ph, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    if (hatch) { g.save(); g.beginPath(); g.rect(0, 0, w, h); g.clip(); g.strokeStyle = 'rgba(242,194,0,.55)'; g.lineWidth = 18; for (let x = -h; x < w; x += 56) { g.beginPath(); g.moveTo(x, h); g.lineTo(x + h, 0); g.stroke(); } g.restore(); }
+    else { g.fillStyle = color + '22'; g.fillRect(0, 0, w, h); }
+    g.strokeStyle = color; g.lineWidth = 16; g.strokeRect(8, 8, w - 16, h - 16);
+    g.fillStyle = color; g.fillRect(w * 0.12, h - 86, w * 0.76, 62);
+    centerText(g, label, w / 2, h - 54, `700 46px ${FONT_C}`, '#fff');
+  });
+}
+decal(4.0, 2.4, RECV.x, 2.35, zoneTex(500, 300, '#1e88e5', 'RECEPCIÓN'));
+decal(2.9, 2.3, EXP.x, 3.15, zoneTex(400, 318, '#2e9f5a', 'EXPEDICIÓN'));
+decal(2.3, 2.3, WR.x, WR.z, zoneTex(320, 320, '#e8671c', 'ENFARDADO'));
+decal(1.5, 2.1, 1.6, 2.85, zoneTex(220, 308, '#8e44ad', 'PREPARACIÓN'));
+decal(2.4, 1.2, (DOCK.x0 + DOCK.x1) / 2, 5.1, zoneTex(400, 200, '#f2c200', 'ZONA DE CARGA', true));
+/* Pasillo peatonal verde: de la ENTRADA a la oficina */
+const walkTex = canvasTex(1024, 128, (g, w, h) => {
+  g.fillStyle = 'rgba(46,159,90,.55)'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.fillRect(0, 0, w, 8); g.fillRect(0, h - 8, w, 8);
+  for (let x = 20; x < w - 200; x += 270) { centerText(g, 'PEATONES', x + 90, h / 2, `700 40px ${FONT_C}`, '#fff'); g.beginPath(); g.moveTo(x + 195, h / 2 - 16); g.lineTo(x + 219, h / 2); g.lineTo(x + 195, h / 2 + 16); g.fillStyle = '#fff'; g.fill(); }
+});
+decal(5.8, 0.75, -3.85, 5.6, walkTex, Math.PI);
+/* Líneas de PARE al salir de cada pasillo */
+const stopTex = canvasTex(360, 120, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#fff'; g.fillRect(0, h - 18, w, 18); centerText(g, 'PARE', w / 2, h / 2 - 8, `700 72px ${FONT_C}`, '#fff'); });
+for (const x of AISLE_X) decal(2.4, 0.8, x, -1.35, stopTex, Math.PI);
+
+/* 2. Letreros colgantes de pasillo (doble cara) */
+[[AISLE_X[0], 1, '001 – 002'], [AISLE_X[1], 2, '003 – 004'], [AISLE_X[2], 3, '005 – 006']].forEach(([x, n, r]) => {
+  const tex = canvasTex(512, 220, (g, w, h) => { g.fillStyle = '#1d3f6e'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2c200'; g.fillRect(0, h - 16, w, 16); centerText(g, `PASILLO ${n}`, w / 2, 80, `700 96px ${FONT_C}`, '#fff'); centerText(g, `Estantes ${r}`, w / 2, 164, `600 46px ${FONT_B}`, '#f2c200'); });
+  for (const s of [0, Math.PI]) mplane(1.5, 0.64, x, 4.0, -1.1 + (s ? -0.01 : 0.01), s, new THREE.MeshBasicMaterial({ map: tex }));
+  for (const dx of [-0.6, 0.6]) mbox(0.015, 1.5, 0.015, x + dx, 5.05, -1.1, steelDark);
+});
+
+/* 3. Protectores de columna y placas de carga máxima en cada estante */
+const plateTex = canvasTex(256, 200, (g, w, h) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#1b2733'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#1d3f6e'; g.fillRect(3, 3, w - 6, 46); centerText(g, 'CARGA MÁXIMA', w / 2, 28, `700 34px ${FONT_C}`, '#fff');
+  centerText(g, '1.000 kg', w / 2, 92, `700 54px ${FONT_C}`, '#1b2733'); centerText(g, 'por nivel · 3 niveles', w / 2, 140, `500 24px ${FONT_B}`, '#1b2733'); centerText(g, 'No trepar · No sobrecargar', w / 2, 174, `600 20px ${FONT_B}`, '#c62828');
+});
+const plateMat = new THREE.MeshBasicMaterial({ map: plateTex });
+for (const e of ESTANTES) {
+  const xf = e.face - e.dir * 0.04, xb = e.face - e.dir * (DEPTH - 0.04), cx = (xf + xb) / 2;
+  mplane(0.34, 0.27, cx, 1.55, FRONT_Z + 0.005, 0, plateMat);
+  for (const x of [xf, xb]) mbox(0.14, 0.45, 0.14, x, 0.225, FRONT_Z + 0.02, stripeMat);
+}
+
+/* 4. Señales de seguridad en las paredes */
+// Pared izquierda (mira hacia +x)
+wallSign(1.2, 0.85, -9.985, 1.75, -0.4, Math.PI / 2, 360, 256, (g, w, h) => {
+  g.fillStyle = '#1b8a3c'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.fillRect(10, 52, w - 20, h - 62);
+  centerText(g, 'RUTA DE EVACUACIÓN', w / 2, 27, `700 29px ${FONT_C}`, '#fff');
+  g.fillStyle = '#9fb3c8'; for (let i = 0; i < 6; i++) g.fillRect(40 + i * 48 + (i % 2) * 6, 70, 22, 100);
+  g.strokeStyle = '#1b8a3c'; g.lineWidth = 7; g.beginPath(); g.moveTo(60, 190); g.lineTo(w / 2, 190); g.lineTo(w / 2, 230); g.stroke();
+  g.fillStyle = '#1b8a3c'; g.beginPath(); g.moveTo(w / 2 - 14, 222); g.lineTo(w / 2 + 14, 222); g.lineTo(w / 2, 244); g.fill();
+  g.fillStyle = '#c62828'; g.beginPath(); g.arc(60, 190, 9, 0, Math.PI * 2); g.fill(); g.font = `600 17px ${FONT_B}`; g.textAlign = 'left'; g.fillText('Usted está aquí', 74, 212);
+});
+mbox(0.18, 0.4, 0.5, -9.9, 1.5, 3.0, new THREE.MeshLambertMaterial({ color: '#2e9f5a' }));
+wallSign(0.45, 0.45, -9.8, 1.5, 3.0, Math.PI / 2, 128, 128, (g, w, h) => { g.fillStyle = '#2e9f5a'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.fillRect(52, 22, 24, 84); g.fillRect(22, 52, 84, 24); });
+wallSign(0.6, 0.2, -9.985, 2.0, 3.0, Math.PI / 2, 240, 80, (g, w, h) => { g.fillStyle = '#2e9f5a'; g.fillRect(0, 0, w, h); centerText(g, 'BOTIQUÍN', w / 2, h / 2 + 2, `700 50px ${FONT_C}`, '#fff'); });
+mbox(0.2, 0.8, 0.7, -9.9, 1.3, -4.5, lam('#c62828'));
+wallSign(0.6, 0.62, -9.795, 1.3, -4.5, Math.PI / 2, 200, 206, (g, w, h) => { g.fillStyle = '#c62828'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(14, 14, w - 28, 120); g.strokeStyle = '#c62828'; g.lineWidth = 10; g.beginPath(); g.arc(w / 2, 74, 42, 0, Math.PI * 2); g.stroke(); centerText(g, 'MANGUERA', w / 2, 160, `700 36px ${FONT_C}`, '#fff'); centerText(g, 'CONTRA INCENDIOS', w / 2, 190, `600 20px ${FONT_B}`, '#fff'); });
+// Pared derecha (mira hacia -x)
+mbox(0.6, 0.9, 0.2, 9.0, 1.5, -11.7, lam('#aab2ba'));
+wallSign(0.4, 0.36, 9.0, 1.62, -11.595, 0, 160, 144, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); warnTri(g, w / 2, 62, 50); centerText(g, '⚡', w / 2, 72, `700 44px Arial`, '#111'); centerText(g, 'RIESGO ELÉCTRICO', w / 2, 126, `700 20px ${FONT_C}`, '#111'); });
+wallSign(0.6, 0.72, 9.985, 2.0, -0.6, -Math.PI / 2, 200, 240, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.lineWidth = 16; g.strokeStyle = '#c62828'; g.beginPath(); g.arc(w / 2, 96, 74, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#333'; g.fillRect(52, 90, 96, 16); g.fillStyle = '#e8671c'; g.fillRect(148, 90, 10, 16); g.save(); g.translate(w / 2, 96); g.rotate(-Math.PI / 4); g.fillStyle = '#c62828'; g.fillRect(-74, -8, 148, 16); g.restore(); centerText(g, 'PROHIBIDO FUMAR', w / 2, 206, `700 30px ${FONT_C}`, '#c62828'); });
+wallSign(0.75, 0.75, 9.985, 2.1, -1.9, -Math.PI / 2, 240, 240, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); warnTri(g, w / 2, 96, 84); g.fillStyle = '#111'; g.fillRect(84, 102, 60, 30); g.fillRect(132, 70, 8, 62); g.fillRect(140, 118, 30, 6); g.beginPath(); g.arc(96, 136, 10, 0, 7); g.arc(132, 136, 10, 0, 7); g.fill(); centerText(g, 'PRECAUCIÓN', w / 2, 196, `700 32px ${FONT_C}`, '#111'); centerText(g, 'TRÁNSITO DE MONTACARGAS', w / 2, 224, `600 16px ${FONT_B}`, '#111'); });
+// Pared del fondo (mira hacia +z)
+wallSign(1.5, 1.0, -6.5, 2.0, -11.785, 0, 450, 300, (g, w, h) => { g.fillStyle = '#1b8a3c'; g.fillRect(0, 0, w, h); centerText(g, 'DÍAS SIN ACCIDENTES', w / 2, 44, `700 40px ${FONT_C}`, '#fff'); g.fillStyle = '#fff'; g.fillRect(w / 2 - 110, 82, 220, 130); centerText(g, '128', w / 2, 150, `700 110px ${FONT_C}`, '#1b8a3c'); centerText(g, 'Récord: 214 días · La seguridad es primero', w / 2, 256, `500 22px ${FONT_B}`, '#fff'); });
+wallSign(1.6, 1.1, 6.5, 2.0, -11.785, 0, 480, 330, (g, w, h) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#1d3f6e'; g.fillRect(0, 0, w, 60); centerText(g, 'METODOLOGÍA 5S', w / 2, 32, `700 40px ${FONT_C}`, '#fff');
+  [['SEIRI', 'Clasificar', '#c62828'], ['SEITON', 'Ordenar', '#e8671c'], ['SEISO', 'Limpiar', '#f2c200'], ['SEIKETSU', 'Estandarizar', '#2e9f5a'], ['SHITSUKE', 'Disciplina', '#1e88e5']].forEach(([a, b, c], i) => { const y = 88 + i * 50; g.fillStyle = c; g.fillRect(24, y - 18, 36, 36); g.fillStyle = '#1b2733'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.font = `700 30px ${FONT_C}`; g.fillText(a, 76, y); g.font = `500 26px ${FONT_B}`; g.fillText(b, 250, y); });
+});
+// Pared frontal por dentro (mira hacia -z)
+wallSign(1.1, 0.34, (DOCK.x0 + DOCK.x1) / 2, 3.95, FZ - 0.115, Math.PI, 330, 100, (g, w, h) => { g.fillStyle = '#1d3f6e'; g.fillRect(0, 0, w, h); centerText(g, 'MUELLE 1', w / 2, h / 2 + 3, `700 64px ${FONT_C}`, '#fff'); });
+for (const x of [0]) { mbox(0.3, 0.1, 0.06, x + 0.75, 3.1, FZ - 0.14, lam('#eef1f4')); mbox(0.24, 0.05, 0.02, x + 0.75, 3.08, FZ - 0.18, new THREE.MeshBasicMaterial({ color: '#fffbe6' })); }
+
+/* 5. Contenedores de reciclaje junto al muelle */
+[['CARTÓN', '#1e88e5'], ['PLÁSTICO / FILM', '#f2c200'], ['GENERAL', '#2e9f5a']].forEach(([t, c], i) => {
+  const z = 2.75 + i * 0.62; mbox(0.5, 0.85, 0.55, 9.45, 0.425, z, lam(c)); mbox(0.54, 0.05, 0.58, 9.45, 0.87, z, lam('#2b2f33'));
+  wallSign(0.46, 0.2, 9.195, 0.6, z, -Math.PI / 2, 230, 100, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); centerText(g, t, w / 2, h / 2 + 2, `700 ${t.length > 8 ? 30 : 44}px ${FONT_C}`, '#1b2733'); });
+});
+obst(9.15, 9.75, 2.4, 4.3);
+
+/* 6. Exterior: muelle, punto de reunión y avisos */
+wallSign(1.3, 0.4, (DOCK.x0 + DOCK.x1) / 2, 4.05, FZ + 0.12, 0, 330, 100, (g, w, h) => { g.fillStyle = '#f2c200'; g.fillRect(0, 0, w, h); centerText(g, 'MUELLE 1', w / 2, h / 2 + 3, `700 64px ${FONT_C}`, '#1b2733'); });
+wallSign(0.8, 0.6, 8.2, 1.7, FZ + 0.115, 0, 260, 196, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#c62828'; g.fillRect(0, 0, w, 56); centerText(g, 'PROHIBIDO EL PASO', w / 2, 30, `700 32px ${FONT_C}`, '#fff'); centerText(g, 'Solo personal', w / 2, 100, `600 30px ${FONT_B}`, '#1b2733'); centerText(g, 'autorizado', w / 2, 140, `600 30px ${FONT_B}`, '#1b2733'); });
+wallSign(0.8, 0.55, -2.0, 1.7, FZ + 0.115, 0, 260, 180, (g, w, h) => { g.fillStyle = '#1565c0'; g.fillRect(0, 0, w, h); centerText(g, 'VISITANTES', w / 2, 44, `700 40px ${FONT_C}`, '#fff'); centerText(g, 'Reportarse en', w / 2, 100, `500 28px ${FONT_B}`, '#fff'); centerText(g, 'la oficina', w / 2, 136, `500 28px ${FONT_B}`, '#fff'); });
+mbox(0.07, 2.2, 0.07, -7.0, 1.1, 18.6, postMat); obst(-7.1, -6.9, 18.5, 18.7);
+for (const s of [0, Math.PI]) wallSign(0.8, 0.8, -7.0, 2.0, 18.6 + (s ? -0.045 : 0.045), s, 240, 240, (g, w, h) => { g.fillStyle = '#1b8a3c'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.beginPath(); g.moveTo(w / 2 + dx * 30, 96 + dy * 30); g.lineTo(w / 2 + dx * 62, 96 + dy * 62); g.lineWidth = 12; g.strokeStyle = '#fff'; g.stroke(); } g.beginPath(); g.arc(w / 2, 96, 16, 0, 7); g.fill(); centerText(g, 'PUNTO DE', w / 2, 188, `700 34px ${FONT_C}`, '#fff'); centerText(g, 'REUNIÓN', w / 2, 220, `700 34px ${FONT_C}`, '#fff'); });
+decal(3, 3, -7.0, 17.0, canvasTex(256, 256, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = '#2e9f5a'; g.lineWidth = 14; g.strokeRect(10, 10, w - 20, h - 20); g.beginPath(); g.moveTo(10, 10); g.lineTo(w - 10, h - 10); g.moveTo(w - 10, 10); g.lineTo(10, h - 10); g.lineWidth = 6; g.stroke(); }));
+
 /* Transpaleta */
 const jackG = new THREE.Group(); scene.add(jackG);
 const jackRed = lam('#c62828'), jackBlack = lam('#1d2126'), jackSteel = lam('#8e979f');
@@ -2341,6 +2449,7 @@ function canTake(L) {
   if (!jack.P || jack.P !== o.pallet) { say('Primero carga el palet vacío en la transpaleta', 'info'); return null; }
   const line = findLine(L);
   if (!line) { state.errors++; flash(L, 0x7a0000); say(`✗ ${L.code} no está en la orden`, 'err'); return null; }
+  if (needScan(L)) return null;
   if (line.picked + (line.transit || 0) >= line.qty) { state.errors++; flash(L, 0x7a0000); say(`✗ Exceso: ya tienes ${line.qty} de ${L.code}`, 'err'); return null; }
   return line;
 }
@@ -2453,6 +2562,36 @@ function paperClick() {
   say('Orden en la mano. Toma la transpaleta y el palet vacío', 'ok'); renderOrder(); drawOrderCanvas(); updateHeader();
 }
 
+/* Escáner de radiofrecuencia: confirmar la ubicación antes de tomar las cajas */
+function scanFlash() {
+  for (const c of ctrls) if (c.userData.hand === 'right' || ctrls.length === 1) { const ln = c.userData.line; if (ln) { ln.material.color.set('#ff1744'); setTimeout(() => ln.material.color.set('#ffffff'), 250); } }
+}
+function scanClick(hit) {
+  const L = hit.object.userData.scanLoc, o = state.order, flat = hit.object.userData.flat;
+  const hd = head(), far = Math.hypot(hd.x - L.fx, hd.z - L.fz) > 3.2;
+  if (!o || !o.v10 || far) {
+    // fuera del picking con escáner, la etiqueta del piso sirve para desplazarse y la de la viga para tomar la caja
+    if (flat) { if (isFK() || state.paused || promptBlocks()) return; if (!blocked(hit.point.x, hit.point.z, 0.2)) teleportTo(hit.point.x, hit.point.z, true); }
+    else if (o && !o.v10) pickAt(L);
+    else say(`Acércate para escanear ${L.code}`, 'info');
+    return;
+  }
+  if (!guard()) return;
+  if (!o.paper) { say('Primero imprime y toma la orden en la oficina', 'info'); return; }
+  ensureStart(); scanFlash();
+  const line = findLine(L);
+  if (!line) { state.errors++; state.scanErr = (state.scanErr || 0) + 1; flash(L, 0x7a0000); say(`✗ Escaneo ${L.code}: ubicación equivocada`, 'err'); }
+  else if (line.picked >= line.qty) say(`${L.code} ya está completa`, 'info');
+  else if (line.scanned) say(`${L.code} ya está confirmada · toma ${line.qty - line.picked}`, 'info');
+  else { line.scanned = true; flash(L, 0x0a5a1e); say(`✓ Ubicación ${L.code} confirmada · toma ${line.qty - line.picked} de ${L.prod.name}`, 'ok'); }
+  renderOrder(); drawOrderCanvas();
+}
+function needScan(L) {
+  const line = findLine(L);
+  if (line && !line.scanned && line.picked < line.qty) { say(`Primero escanea la etiqueta amarilla de ${L.code}`, 'info'); return true; }
+  return false;
+}
+
 /* Actividad 1 en versión 10 */
 const pick1 = ACTS.picking;
 Object.assign(pick1, {
@@ -2481,13 +2620,14 @@ Object.assign(pick1, {
     if (l.step === 'wrap') return { chip: 'ENFARDADORA', chipBg: '#ffe08a', title: 'Proteger y etiquetar', sub: 'Plataforma amarilla, a la derecha', sub2: o.wrapped ? 'Listo' : 'Palet sobre la plataforma → ENVOLVER', right: o.wrapped ? '✓' : '—', done: o.wrapped };
     if (l.step === 'truck') return { chip: 'CAMIÓN', chipBg: '#c9ffd9', title: 'Cargar el camión', sub: 'Abre el portón del muelle', sub2: o.loaded ? 'Cargado' : 'Deja el palet dentro del camión', right: o.loaded ? '✓' : '—', done: o.loaded };
     if (!o.paper) return { chip: '· · ·', title: 'Pendiente de imprimir', sub: '', sub2: '', right: '—', done: false };
-    return pickView(l, `Sist.: ${l.sys} cajas${l.counted != null ? ` · contó ${l.counted}` : ''}`);
+    return pickView(l, `${!l.scanned && l.picked < l.qty ? '▣ Escanear ubicación · ' : ''}Sist.: ${l.sys} cajas${l.counted != null ? ` · contó ${l.counted}` : ''}`);
   },
   onBox(L) {
     const o = state.order;
     if (!o.paper) { say('Primero imprime y toma la orden en la oficina', 'info'); return; }
     if (jack.P !== o.pallet) { say('Primero carga el palet vacío en la transpaleta', 'info'); return; }
     if (!jackNear()) { say('Acerca la transpaleta con el palet', 'info'); return; }
+    if (needScan(L)) return;
     pickLike(L, { onComplete: askRemaining, add: prod => addPalletBox(o.pallet, prod) });
   },
   results(o, t) {
@@ -2495,7 +2635,7 @@ Object.assign(pick1, {
     const cn = state.counts.length, ok = countOk(), acc = pct(state.correct, state.correct + state.errors), lph = lphOf(prods.length, t);
     const adj = state.counts.filter(c => c.ok && c.real !== c.expected);
     return {
-      tiles: [['Tiempo', fmtTime(t), 'de la entrada al camión'], ['Distancia', fmtNum(state.distance, 0) + ' m', 'desde el primer paso'], ['Errores', String(state.errors), 'picking o conteo'],
+      tiles: [['Tiempo', fmtTime(t), 'de la entrada al camión'], ['Distancia', fmtNum(state.distance, 0) + ' m', 'desde el primer paso'], ['Errores', String(state.errors), `${state.scanErr || 0} de escaneo`],
         ['Conteo', `${ok}/${cn}`, `exactitud ${pct(ok, cn)} %`], ['Exactitud', acc + ' %', 'cajas correctas'], ['Productividad', fmtNum(lph, 0), 'líneas por hora']],
       table: adj.length ? '<div class="h3">Ajustes de inventario</div>' + table(['Ubicación', 'Artículo', 'Esperado', 'Físico', 'Ajuste'], adj.map(a => [a.code, esc(a.name), a.expected, a.real, (a.real - a.expected > 0 ? '+' : '') + (a.real - a.expected)])) : '',
       ind: `${o.sort === 'route' ? 'Ruta' : 'Desordenada'} · ${fmtNum(lph, 0)} líneas/h`
@@ -2536,7 +2676,7 @@ function startTask(mode) {
   resetStock(); clearCart(); clearExp(); clearRecv(); clearStickers(); zoneAMarks.forEach(m => m.visible = false);
   if (routeLine) { scene.remove(routeLine); routeLine = null; }
   state.orderNo++;
-  Object.assign(state, { started: false, t0: 0, elapsed: 0, done: false, cancelled: false, paused: false, pauseAt: 0, armed: null, distance: 0, errors: 0, correct: 0, route: [], counts: [], prompt: null, fifoErr: 0, sepErr: 0, replen: [], crashes: 0, wrongPlace: 0 });
+  Object.assign(state, { scanErr: 0, started: false, t0: 0, elapsed: 0, done: false, cancelled: false, paused: false, pauseAt: 0, armed: null, distance: 0, errors: 0, correct: 0, route: [], counts: [], prompt: null, fifoErr: 0, sepErr: 0, replen: [], crashes: 0, wrongPlace: 0 });
   const o = ACT().build();
   o.no = state.orderNo; o.mode = state.mode; if (!o.sort) o.sort = 'random';
   state.order = o;
@@ -3086,7 +3226,7 @@ function classify(hit) {
   if (o === floor || o.userData.floor) { const ok = !blocked(hit.point.x, hit.point.z, 0.2); return { type: 'floor', ok, hit }; }
   return { type: 'block', hit };
 }
-const isActive = cl => cl && (['print', 'paper', 'jack', 'door', 'wrap', 'pallet', 'floorBox'].includes(cl.type) || cl.type === 'box' || cl.type === 'recv' || cl.type === 'row' || cl.type === 'close' || cl.type === 'closeRecv' || (cl.type === 'ui' && cl.btn.on) || (cl.type === 'countbtn' && cl.btn.on));
+const isActive = cl => cl && (['print', 'paper', 'jack', 'door', 'wrap', 'pallet', 'floorBox', 'scan'].includes(cl.type) || cl.type === 'box' || cl.type === 'recv' || cl.type === 'row' || cl.type === 'close' || cl.type === 'closeRecv' || (cl.type === 'ui' && cl.btn.on) || (cl.type === 'countbtn' && cl.btn.on));
 function activate(c) {
   initAudio();
   if (!c || !state.order) return;
@@ -3104,6 +3244,7 @@ function activate(c) {
   else if (c.type === 'wrap') wrapClick();
   else if (c.type === 'pallet') { if (state.order.v10) palletClick(c.hit.object.userData.P); }
   else if (c.type === 'floorBox') floorBoxClick(c.hit.object);
+  else if (c.type === 'scan') scanClick(c.hit);
   else if (c.type === 'floor') { if (isFK()) { say('En esta actividad te mueves con el montacargas', 'info'); return; } if (!c.ok) return; if (state.paused) { say(PAUSE_MSG, 'info'); return; } if (promptBlocks()) return; teleportTo(c.hit.point.x, c.hit.point.z, true); }
 }
 let hoverLocs = new Set();
@@ -3162,7 +3303,16 @@ for (let i = 0; i < 2; i++) {
     if (e.data.handedness === 'left' || (!wristPanel.parent && i === 1)) { if (wristPanel.parent) wristPanel.parent.remove(wristPanel); c.add(wristPanel); }
   });
   c.addEventListener('disconnected', () => { c.userData.gamepad = null; });
-  c.addEventListener('connected', e => { body.visible = !e.data.hand; });
+  c.addEventListener('connected', e => {
+    body.visible = !e.data.hand;
+    /* Escáner de mano en el control derecho */
+    if (e.data.handedness === 'right' && !e.data.hand && !c.userData.scanner) {
+      const sc = new THREE.Group(); sc.position.set(0, -0.02, 0.02);
+      mbox(0.05, 0.035, 0.13, 0, 0, -0.02, lam('#f2c200'), sc); mbox(0.035, 0.1, 0.04, 0, -0.06, 0.03, lam('#2b2f33'), sc);
+      mbox(0.04, 0.02, 0.005, 0, 0.005, -0.087, new THREE.MeshBasicMaterial({ color: '#ff1744' }), sc);
+      c.add(sc); c.userData.scanner = sc; body.visible = false;
+    }
+  });
   /* Gatillo o pinza: si la mano está junto a una caja, la agarra; si no, funciona como puntero */
   c.addEventListener('selectstart', () => { initAudio(); c.userData.grabSel = handGrab(i, 'select'); });
   c.addEventListener('selectend', () => { if (c.userData.grabSel) { c.userData.grabSel = false; c.userData.skipUntil = performance.now() + 300; handRelease(i, 'select'); } });
