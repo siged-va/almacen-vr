@@ -408,7 +408,7 @@ tr.cur td{color:var(--label)}
       <li><b>Salir del almacén:</b> hay que pulsarlo dos veces. En el visor cierra la realidad virtual y regresa a la página desde donde se abrió el enlace; en la PC está en la barra de arriba. Si había un picking en curso, queda en pausa.</li>
       <li><b>Nuevo picking:</b> crea al momento un pedido nuevo de 10 artículos, con el tiempo en cero, para el siguiente participante. Si hay un picking a medias, pide confirmación y lo guarda como cancelado. Cada picking queda numerado en el historial (Picking 1, 2, 3…) con su tiempo; el botón <b>Borrar historial</b> de la ventana de resultados lo deja en blanco para una clase nueva.</li>
     </ul>
-    <p>En el visor, los seis botones (Organizar ruta, Pausar, Cancelar, Nuevo, Otra actividad y Salir del almacén) están en la parte de abajo de la hoja de la orden, tanto en el tablero de la entrada como en la hoja que aparece sobre la mano izquierda. Apunta con la mano derecha y pulsa el gatillo. Las preguntas (cuántas cajas, qué cliente, reponer o no, clase A/B/C) aparecen en un panel flotante a un costado.</p>
+    <p>En el visor, los seis botones (Organizar ruta, Pausar, Cancelar, Nuevo, Otra actividad y Salir del almacén) están en la parte de abajo de la hoja de la orden, en la hoja que aparece sobre la mano izquierda. Apunta con la mano derecha y pulsa el gatillo. Las preguntas (cuántas cajas, qué cliente, reponer o no, clase A/B/C) aparecen en un panel flotante a un costado.</p>
 
     <h3>Botón Organizar ruta</h3>
     <p>Cada pedido nuevo llega con las ubicaciones desordenadas. El botón <b>Organizar ruta</b>, en el panel de la orden, acomoda las líneas en el orden del recorrido. En el visor se hace apuntando al tablero de la orden, a la izquierda de la entrada, y pulsando el gatillo. Se puede usar antes de empezar o a mitad del pedido. En el historial, la columna <b>Hoja</b> indica si la ruta se organizó.</p>
@@ -418,7 +418,7 @@ tr.cur td{color:var(--label)}
 
     <h3>Controles</h3>
     <dl class="ctl">
-      <dt>Visor VR</dt><dd>Gatillo sobre el piso: desplazarte. Gatillo sobre una caja: tomarla. Joystick derecho a los lados: girar 30°. La orden aparece sobre tu mano izquierda y en el tablero de la entrada.</dd>
+      <dt>Visor VR</dt><dd>Gatillo sobre el piso: desplazarte. Gatillo sobre una caja: tomarla. Joystick derecho a los lados: girar 30°. La orden aparece sobre tu mano izquierda . Además, la pantalla gigante de la pared delantera (entre la oficina y la entrada) muestra la orden, el tiempo y el avance.</dd>
       <dt>PC</dt><dd>Arrastrar: mirar. W A S D o flechas: caminar. Clic en el piso: desplazarte. Clic en una caja: tomarla.</dd>
       <dt>Celular</dt><dd>Arrastrar: mirar. Tocar el piso: desplazarte. Tocar una caja: tomarla.</dd>
     </dl>
@@ -780,8 +780,75 @@ signBoard(expSignTex, 1.3, 0.9, 7.2, 1.45, 3.9, -1.25, 'close');
 /* Tablero de la orden (misma textura que la muñeca) */
 const OT_W = 512, OT_H = 820;
 const orderTex = canvasTex(OT_W, OT_H, () => {});
-const boardGrp = signBoard(orderTex, 1.2, 1.2 * OT_H / OT_W, -7.0, 1.6, 3.9, 1.25, null);
-const boardFace = boardGrp.children[1]; boardFace.userData.action = 'ui'; actionables.push(boardFace);
+/* Pantalla gigante en la pared delantera, entre la oficina y la entrada (mira hacia los estantes) */
+const BS_W = 1600, BS_H = 900;
+const bigTex = canvasTex(BS_W, BS_H, () => {});
+const bigScreen = new THREE.Group(); bigScreen.position.set(-3.95, 3.05, 6.55); bigScreen.rotation.y = Math.PI; scene.add(bigScreen);
+{
+  const sw = 4.8, sh = sw * BS_H / BS_W;
+  const bezel = new THREE.Mesh(new THREE.BoxGeometry(sw + 0.16, sh + 0.16, 0.1), new THREE.MeshLambertMaterial({ color: '#15181c' }));
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map: bigTex }));
+  face.position.z = 0.052; bigScreen.add(bezel, face); blockers.push(bezel, face);
+  const led = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.02, 0.01), new THREE.MeshBasicMaterial({ color: '#3fb96b' })); led.position.set(sw / 2 - 0.1, -sh / 2 - 0.05, 0.055); bigScreen.add(led);
+  for (const x of [-1.4, 1.4]) { const br = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.08), new THREE.MeshLambertMaterial({ color: '#2b2f33' })); br.position.set(x, 0, -0.07); bigScreen.add(br); }
+}
+function drawBigScreen() {
+  const g = bigTex.userData.ctx, W = BS_W, H = BS_H, o = state.order, a = ACT(); if (!o) return;
+  const FC = '"Barlow Condensed", Arial, sans-serif', FB = '"Barlow", Arial, sans-serif', FM = '"IBM Plex Mono", monospace';
+  g.fillStyle = '#0d1117'; g.fillRect(0, 0, W, H);
+  // barra superior
+  g.fillStyle = '#10284a'; g.fillRect(0, 0, W, 92); g.fillStyle = '#e8671c'; g.fillRect(0, 92, W, 6);
+  g.textBaseline = 'middle'; g.textAlign = 'left';
+  g.fillStyle = '#fff'; g.font = `700 54px ${FC}`; g.fillText('LOGISTEM', 32, 48);
+  const lw = g.measureText('LOGISTEM').width; g.fillStyle = '#9fc3ff'; g.font = `600 26px ${FC}`; g.fillText('CENTRO DE OPERACIONES', 32 + lw + 18, 50); const ax = 32 + lw + 18 + g.measureText('CENTRO DE OPERACIONES').width + 40;
+  g.textAlign = 'left'; g.fillStyle = '#f5c518'; g.font = `700 36px ${FC}`; g.fillText(fitText(g, `ACTIVIDAD ${a.n} · ${a.name.toUpperCase()}`, W - 420 - ax), ax, 48);
+  const now = new Date();
+  g.textAlign = 'right'; g.fillStyle = '#fff'; g.font = `700 52px ${FC}`; g.fillText('Nº ' + String(o.no).padStart(4, '0'), W - 32, 48);
+  g.fillStyle = '#9fc3ff'; g.font = `600 30px ${FM}`; g.fillText(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`, W - 230, 50);
+  // panel izquierdo
+  const LX = 32, LW = 470;
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  g.fillStyle = '#98a3ae'; g.font = `600 26px ${FC}`; g.fillText(a.eyebrow.toUpperCase(), LX, 148);
+  g.fillStyle = '#fff'; g.font = `700 40px ${FB}`; g.fillText(fitText(g, o.title, LW), LX, 196);
+  g.fillStyle = '#b8c2cc'; g.font = `500 24px ${FB}`;
+  const metaLines = wrapLines(g, a.meta(o), LW, 3); metaLines.forEach((t, i) => g.fillText(t, LX, 236 + i * 32));
+  const done = linesDone(), total = o.lines.length;
+  const tiles = [['TIEMPO', fmtTime(curTime()), '#fff'], ['DISTANCIA', fmtNum(state.distance, 0) + ' m', '#fff'], ['ERRORES', String(state.errors), state.errors ? '#ef5350' : '#fff'], ['LÍNEAS', `${done}/${total}`, done === total ? '#3fb96b' : '#fff']];
+  tiles.forEach(([lab, val, col], i) => {
+    const x = LX + (i % 2) * 240, y = 350 + Math.floor(i / 2) * 170;
+    rr(g, x, y, 225, 150, 14); g.fillStyle = '#18202a'; g.fill();
+    g.fillStyle = '#98a3ae'; g.font = `600 26px ${FC}`; g.fillText(lab, x + 20, y + 40);
+    g.fillStyle = col; g.font = `700 70px ${FC}`; g.fillText(val, x + 20, y + 118);
+  });
+  // barra de avance
+  const py = 715; rr(g, LX, py, 465, 26, 13); g.fillStyle = '#18202a'; g.fill();
+  if (total) { rr(g, LX, py, Math.max(26, 465 * done / total), 26, 13); g.fillStyle = '#3fb96b'; g.fill(); }
+  g.fillStyle = '#98a3ae'; g.font = `600 24px ${FC}`; g.fillText(`AVANCE ${total ? Math.round(done / total * 100) : 0} %`, LX, py + 60);
+  // estado
+  const st = state.cancelled ? ['CANCELADA', '#6e1814', '#fff'] : state.paused ? ['EN PAUSA', '#5c4800', '#f5c518'] : state.done ? [a.doneTitle, '#123c22', '#fff'] : state.started ? ['EN CURSO', '#10284a', '#9fc3ff'] : ['LISTO PARA INICIAR', '#18202a', '#b8c2cc'];
+  rr(g, LX, 800, 465, 70, 12); g.fillStyle = st[1]; g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = st[2]; g.font = `700 40px ${FC}`; g.fillText(fitText(g, st[0], 440), LX + 232, 836);
+  // líneas de la orden en dos columnas
+  const RX = 540, RW = W - RX - 28, colW = (RW - 24) / 2, n = o.lines.length, perCol = Math.max(1, Math.ceil(n / 2));
+  const top = 120, rh = Math.min(104, (H - top - 24) / perCol), fs = Math.min(1, rh / 96);
+  o.lines.forEach((l, i) => {
+    const v = a.view(l), col = Math.floor(i / perCol), r = i % perCol;
+    const x = RX + col * (colW + 24), y = top + r * rh, cy = y + rh / 2, dn = v.done;
+    rr(g, x, y + 4, colW, rh - 8, 10); g.fillStyle = dn ? '#12281b' : r % 2 ? '#141b23' : '#18202a'; g.fill();
+    const s = 30 * fs; g.lineWidth = 4; g.strokeStyle = v.bad ? '#ef5350' : dn ? '#3fb96b' : '#56606b'; g.fillStyle = v.bad ? '#ef5350' : '#3fb96b';
+    rr(g, x + 14, cy - s / 2, s, s, 6); dn ? g.fill() : g.stroke();
+    if (dn && !v.bad) { g.strokeStyle = '#0d1a12'; g.beginPath(); g.moveTo(x + 14 + s * .22, cy); g.lineTo(x + 14 + s * .42, cy + s * .22); g.lineTo(x + 14 + s * .8, cy - s * .22); g.stroke(); }
+    const cw = 150 * fs + 14, ch = 44 * fs;
+    rr(g, x + 58, cy - ch / 2, cw, ch, 6); g.fillStyle = v.chipBg || '#f5c518'; g.fill();
+    g.fillStyle = '#141414'; g.font = `600 ${Math.round(24 * fs)}px ${FM}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(fitText(g, v.chip, cw - 8), x + 58 + cw / 2, cy + 1);
+    const tx = x + 58 + cw + 14, tw = colW - (tx - x) - 78;
+    g.textAlign = 'left'; g.fillStyle = dn ? '#7f8a95' : '#fff'; g.font = `600 ${Math.round(27 * fs)}px ${FB}`; g.fillText(fitText(g, v.title, tw), tx, cy - 14 * fs);
+    g.fillStyle = '#9fd3ff'; g.font = `500 ${Math.round(19 * fs)}px ${FM}`; g.fillText(fitText(g, v.sub2 ? `${v.sub} · ${v.sub2}` : (v.sub || ''), tw), tx, cy + 20 * fs);
+    g.textAlign = 'right'; g.fillStyle = v.bad ? '#ef5350' : dn ? '#3fb96b' : '#fff'; g.font = `700 ${Math.round(42 * fs)}px ${FC}`; g.fillText(v.right, x + colW - 14, cy + 2);
+  });
+  g.textBaseline = 'alphabetic';
+  bigTex.needsUpdate = true;
+}
 
 /* Marca de inicio */
 const startMark = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.5), new THREE.MeshBasicMaterial({ transparent: true, map: canvasTex(256, 116, (g, w, h) => {
@@ -1556,7 +1623,7 @@ const parkTex = canvasTex(160, 320, (g, w, h) => {
 const PARK = { x: 2.6, z: 2.6, hw: 0.95, hl: 1.9 };
 const parkMark = new THREE.Mesh(new THREE.PlaneGeometry(PARK.hw * 2, PARK.hl * 2), new THREE.MeshBasicMaterial({ map: parkTex, transparent: true }));
 parkMark.rotation.x = -Math.PI / 2; parkMark.position.set(PARK.x, 0.012, PARK.z); parkMark.visible = false; scene.add(parkMark);
-const STATIC_CIRCLES = [{ x: -7.0, z: 3.9, r: 0.65 }, { x: 7.2, z: 3.9, r: 0.65 }, { x: RECV.x, z: RECV.z - 1.25, r: 0.65 }];
+const STATIC_CIRCLES = [{ x: 7.2, z: 3.9, r: 0.65 }, { x: RECV.x, z: RECV.z - 1.25, r: 0.65 }];
 
 function makeLoad(prod, count, x, z, y, r) {
   const g = new THREE.Group();
@@ -2098,7 +2165,7 @@ mplane(1.1, 0.8, 2.4, 1.9, FZ - 0.115, Math.PI, signTex(330, 240, (g, w, h) => {
   g.fillStyle = '#fff'; g.font = '700 34px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.fillText('USO OBLIGATORIO', w / 2, 40);
   for (const [cx, t] of [[w * 0.27, 'CHALECO'], [w * 0.73, 'CALZADO']]) { g.beginPath(); g.arc(cx, 128, 44, 0, Math.PI * 2); g.fillStyle = '#1565c0'; g.fill(); g.fillStyle = '#fff'; g.font = '700 40px Arial'; g.fillText(t === 'CHALECO' ? '🦺' : '🥾', cx, 142); g.fillStyle = '#1b2733'; g.font = '600 24px "Barlow", Arial, sans-serif'; g.fillText(t, cx, 206); }
 }));
-mplane(0.7, 0.7, -2.4, 1.9, FZ - 0.115, Math.PI, signTex(200, 200, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(w / 2, h / 2, 88, 0, Math.PI * 2); g.fillStyle = '#c62828'; g.fill(); g.beginPath(); g.arc(w / 2, h / 2, 70, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = '700 74px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('10', w / 2, h / 2 - 8); g.font = '600 24px Arial'; g.fillText('km/h', w / 2, h / 2 + 38); }));
+mplane(0.6, 0.6, 2.4, 2.75, FZ - 0.115, Math.PI, signTex(200, 200, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(w / 2, h / 2, 88, 0, Math.PI * 2); g.fillStyle = '#c62828'; g.fill(); g.beginPath(); g.arc(w / 2, h / 2, 70, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = '700 74px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('10', w / 2, h / 2 - 8); g.font = '600 24px Arial'; g.fillText('km/h', w / 2, h / 2 + 38); }));
 /* Paso peatonal en la entrada */
 const zebra = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.4), new THREE.MeshBasicMaterial({ map: canvasTex(256, 200, (g, w, h) => { g.fillStyle = '#9a9fa5'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2c200'; for (let x = 8; x < w; x += 42) g.fillRect(x, 0, 22, h); }), transparent: true, opacity: 0.9 }));
 zebra.rotation.x = -Math.PI / 2; zebra.position.set(0, 0.006, FZ - 0.85); scene.add(zebra);
@@ -2682,7 +2749,7 @@ function startTask(mode) {
   state.order = o;
   resetPose();
   if (isFK()) enterForklift(); else leaveForklift();
-  jackG.visible = state.mode === 'picking'; if (state.mode === 'picking') cart.visible = false;
+  jackG.visible = state.mode === 'picking'; if (state.mode === 'picking') { cart.visible = false; expPallet.visible = false; }
   $('#hint').hidden = isFK(); $('#fkHud').hidden = !isFK(); $('#fkPad').hidden = !isFK() || renderer.xr.isPresenting;
   updateHeader(); updateStatus();
   renderOrder(); drawOrderCanvas();
@@ -2919,6 +2986,7 @@ function drawOrderCanvas() {
   else if (state.done) { const r = state.history[state.history.length - 1]; band('rgba(18,60,34,.96)', a.doneTitle, '#fff', r && r.ind ? r.ind : '', '#cdeed8'); }
   drawUiButtons(g, W);
   orderTex.needsUpdate = true;
+  drawBigScreen();
 }
 
 /* Botones dibujados en la hoja (se usan con el rayo en VR y con clic en PC) */
@@ -3206,7 +3274,7 @@ function drawMap() {
 }
 
 /* ---------------- Selección con rayo ---------------- */
-const raycaster = new THREE.Raycaster(); raycaster.far = 14;
+const raycaster = new THREE.Raycaster(); raycaster.far = 24;
 const targets = [countPanel, floor, ...floorsOut, ...boxMeshes, ...blockers, ...actionables];
 function visibleDeep(o) { while (o) { if (o.visible === false) return false; if (o === scene) return true; o = o.parent; } return false; }
 function firstHit() {
