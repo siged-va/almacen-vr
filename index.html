@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almacén Escuela VR 10.1</title>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almacén Escuela VR 10.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -220,7 +220,7 @@ tr.cur td{color:var(--label)}
     <div class="brand">
       <div class="mark" aria-hidden="true"><i class="u1"></i><i class="u2"></i><i class="b1"></i><i class="b2"></i></div>
       <div>
-        <div class="name">Almacén Escuela VR 10.1</div>
+        <div class="name">Almacén Escuela VR 10.2</div>
         <div class="sub" id="subTitle">Gestión de Almacén y Control de Inventario</div>
       </div>
     </div>
@@ -353,6 +353,7 @@ tr.cur td{color:var(--label)}
       <li><b>Oficina:</b> al fondo a la izquierda de la entrada (se entra por su puerta lateral). Apunta a la impresora (sobre el escritorio) y pulsa; cuando la hoja sale, la toma. Hasta entonces la orden no muestra los artículos.</li>
       <li><b>Transpaleta:</b> apunta a la transpaleta roja para tomarla y luego al palet vacío para engancharlo: aparece la rejilla verde de <i>carga asegurada</i>. La transpaleta va <b>delante</b> del estudiante cuando se desplaza (joystick, teletransporte o teclado). Al girar o dar pasos reales con el visor se queda quieta, así puede voltearse al estante y acercarse al palet para dejar las cajas. Pulsar la transpaleta otra vez baja el palet donde estés.</li>
       <li><b>Tomar cajas con las manos:</b> en el visor se acerca la mano a la caja (la ubicación se ilumina) y se agarra con el <b>botón de agarre</b> del costado del control o con el <b>gatillo</b>; se lleva hasta el palet y se suelta encima. Funciona con las dos manos a la vez. Sin controles, con el <b>seguimiento de manos</b> del Quest, se agarra haciendo la pinza (índice y pulgar). Una caja que se suelta lejos del palet cae al piso y hay que recogerla. Con el gatillo lejos de las cajas se sigue usando como puntero; en la PC basta un clic.</li>
+      <li><b>Altura del visor:</b> al entrar en VR la altura se corrige sola si el visor la toma mal (por ejemplo, si el estudiante está sentado): se ve el almacén como una persona de pie. Si aun así el piso se ve alto o bajo, ponerse de pie derecho y pulsar el botón <b>A</b> (control derecho) o <b>X</b> (control izquierdo).</li>
       <li><b>Confirmar lo que queda:</b> al completar cada línea aparece al frente, un poco más abajo de la vista, el teclado de <i>¿Cuántas cajas quedan?</i>. Al responder desaparece, y se repite en cada línea.</li>
       <li><b>Enfardadora:</b> a la derecha, frente al estante 006. Baja el palet sobre la plataforma amarilla y pulsa <b>ENVOLVER</b>. El palet queda protegido con film y etiquetado.</li>
       <li><b>Camión:</b> engancha otra vez el palet, pulsa <b>ABRIR</b> en el panel azul junto al portón del muelle y deja el palet dentro del camión. Ahí termina el tiempo.</li>
@@ -1467,6 +1468,17 @@ const ACT_ORDER = ['picking', 'conteo', 'recepcion', 'ubicacion', 'peps', 'reaba
 const ACT = () => ACTS[state.mode];
 
 /* ================= MONTACARGAS ================= */
+/* Altura de los ojos: si el visor está mal calibrado o el estudiante está sentado,
+   se corrige para que vea el almacén desde una altura de persona de pie (1,62 m). */
+let eyeFix = 0;
+const EYE_H = 1.62;
+function calibrateHeight(force) {
+  if (!renderer.xr.isPresenting) return;
+  const eye = camera.position.y;
+  eyeFix = (force || eye < 1.4 || eye > 1.9) ? EYE_H - eye : 0;
+  if (!isFK()) rig.position.y = eyeFix; else fkSync();
+  if (force) say('Altura ajustada', 'ok');
+}
 const FK = { WB: 1.3, VMAX: 2.2, VREV: 1.2, ACC: 1.5, DEC: 2.2, STEER: 1.1, LIFT: 0.42, FMAX: 2.6, EYE_LIFT: 0.4, FORK_Z: -1.0 };
 const FK_START = { x: 0, z: 3.4 };
 const fk = { p: { x: FK_START.x, z: FK_START.z }, h: 0, v: 0, steer: 0, forkH: 0.05, load: null, crashAt: 0, hintAt: 0, headOff: { x: 0, z: 0 } };
@@ -1577,7 +1589,7 @@ function enterForklift() {
   engineStart();
 }
 function leaveForklift() {
-  fkGroup.visible = false; cart.visible = true; expPallet.visible = true; rig.position.y = 0;
+  fkGroup.visible = false; cart.visible = true; expPallet.visible = true; rig.position.y = eyeFix;
   engineStop();
 }
 
@@ -1698,7 +1710,7 @@ function fkSync() {
     const rot = fk.h + (renderer.xr.isPresenting ? 0 : yaw);
     rig.rotation.y = rot;
     const c = Math.cos(rot), s = Math.sin(rot), ho = fk.headOff;
-    rig.position.set(seat.x - (ho.x * c + ho.z * s), FK.EYE_LIFT, seat.z - (-ho.x * s + ho.z * c));
+    rig.position.set(seat.x - (ho.x * c + ho.z * s), FK.EYE_LIFT + eyeFix, seat.z - (-ho.x * s + ho.z * c));
     rig.updateMatrixWorld(true);
   }
 }
@@ -2054,6 +2066,39 @@ for (const x of [5.0, 5.4, 5.8]) mbox(0.12, 0.05, 0.06, x, 2.92, CF + 0.02, ambe
 obst(3.65, 4.22, FZ + 0.05, FZ + 6.75); obst(6.58, 7.15, FZ + 0.05, FZ + 6.75); obst(3.7, 7.1, FZ + 6.62, FZ + 9.0);
 const TRUCK = { x0: 4.3, x1: 6.5, z0: FZ + 0.4, z1: FZ + 6.5 };
 
+/* Detalles de un almacén real: estructura del techo, luminarias, ventanas, seguridad y muelle */
+const steelDark = lam('#4a525a');
+for (const z of [-10.4, -7.0, -3.6, -0.2, 3.2]) { mbox(20.2, 0.3, 0.14, 0, 5.85, z, steelDark); mbox(20.2, 0.08, 0.1, 0, 5.3, z, steelDark); for (let x = -9; x <= 9; x += 1.5) { const d = mbox(0.06, 0.62, 0.06, x, 5.58, z, steelDark); d.rotation.z = (x / 1.5) % 2 ? 0.6 : -0.6; } }
+const bayLamp = new THREE.CylinderGeometry(0.28, 0.18, 0.22, 16), bayGlow = new THREE.MeshBasicMaterial({ color: '#fffbe8' });
+for (const x of [-6, 0, 6]) for (const z of [-8.7, -5.3, -1.9, 1.5, 4.9]) { mbox(0.02, 0.6, 0.02, x, 5.55, z, steelDark); const l = new THREE.Mesh(bayLamp, steelDark); l.position.set(x, 5.15, z); scene.add(l); const g = new THREE.Mesh(new THREE.CircleGeometry(0.17, 16), bayGlow); g.rotation.x = Math.PI / 2; g.position.set(x, 5.035, z); scene.add(g); }
+const winMat = new THREE.MeshBasicMaterial({ color: '#a9d0f0' });
+for (const s of [-1, 1]) for (let z = -10; z <= 4; z += 2.8) { mplane(2.2, 0.7, s * 9.99, 4.7, z, -s * Math.PI / 2, winMat); mbox(0.04, 0.05, 2.3, s * 9.97, 4.33, z, steelDark); }
+function signTex(w, h, draw) { return new THREE.MeshBasicMaterial({ map: canvasTex(w, h, draw) }); }
+/* Extintores con su señal */
+const extRed = lam('#c62828');
+for (const [x, z, s] of [[-9.95, 1.5, 1], [9.95, 1.5, -1], [-9.95, -7.0, 1], [9.95, -7.0, -1]]) {
+  const e = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 12), extRed); e.position.set(x + s * 0.12, 1.05, z); scene.add(e);
+  mbox(0.05, 0.06, 0.06, x + s * 0.12, 1.33, z, lam('#222'));
+  mplane(0.3, 0.3, x + s * 0.02, 1.75, z, s * Math.PI / 2, signTex(128, 128, (g, w, h) => { g.fillStyle = '#c62828'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '700 22px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.fillText('EXTINTOR', w / 2, h - 12); g.fillRect(52, 22, 24, 62); g.fillRect(60, 14, 8, 10); }));
+}
+/* Salida de emergencia y EPP obligatorio */
+mplane(0.9, 0.3, 0, 3.1, FZ - 0.115, Math.PI, signTex(300, 100, (g, w, h) => { g.fillStyle = '#1b8a3c'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '700 58px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('SALIDA  →', w / 2, h / 2 + 3); }));
+mplane(1.1, 0.8, 2.4, 1.9, FZ - 0.115, Math.PI, signTex(330, 240, (g, w, h) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#1565c0'; g.fillRect(0, 0, w, 58);
+  g.fillStyle = '#fff'; g.font = '700 34px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.fillText('USO OBLIGATORIO', w / 2, 40);
+  for (const [cx, t] of [[w * 0.27, 'CHALECO'], [w * 0.73, 'CALZADO']]) { g.beginPath(); g.arc(cx, 128, 44, 0, Math.PI * 2); g.fillStyle = '#1565c0'; g.fill(); g.fillStyle = '#fff'; g.font = '700 40px Arial'; g.fillText(t === 'CHALECO' ? '🦺' : '🥾', cx, 142); g.fillStyle = '#1b2733'; g.font = '600 24px "Barlow", Arial, sans-serif'; g.fillText(t, cx, 206); }
+}));
+mplane(0.7, 0.7, -2.4, 1.9, FZ - 0.115, Math.PI, signTex(200, 200, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(w / 2, h / 2, 88, 0, Math.PI * 2); g.fillStyle = '#c62828'; g.fill(); g.beginPath(); g.arc(w / 2, h / 2, 70, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = '700 74px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('10', w / 2, h / 2 - 8); g.font = '600 24px Arial'; g.fillText('km/h', w / 2, h / 2 + 38); }));
+/* Paso peatonal en la entrada */
+const zebra = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.4), new THREE.MeshBasicMaterial({ map: canvasTex(256, 200, (g, w, h) => { g.fillStyle = '#9a9fa5'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2c200'; for (let x = 8; x < w; x += 42) g.fillRect(x, 0, 22, h); }), transparent: true, opacity: 0.9 }));
+zebra.rotation.x = -Math.PI / 2; zebra.position.set(0, 0.006, FZ - 0.85); scene.add(zebra);
+/* Pila de palets vacíos junto al muelle */
+for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(palletGeo, palletMat); p.position.set(9.1, PAL_H / 2 + i * PAL_H, 5.2); p.rotation.y = Math.PI / 2; scene.add(p); }
+obst(8.65, 9.55, 4.55, 5.85);
+/* Muelle: rampa niveladora y topes de goma */
+const checker = new THREE.Mesh(new THREE.PlaneGeometry(DOCK.x1 - DOCK.x0 - 0.1, 0.9), new THREE.MeshLambertMaterial({ map: canvasTex(128, 64, (g, w, h) => { g.fillStyle = '#8a9096'; g.fillRect(0, 0, w, h); g.fillStyle = '#6e747a'; for (let y = 0; y < h; y += 8) for (let x = (y / 8) % 2 * 8; x < w; x += 16) g.fillRect(x, y, 6, 3); }) }));
+checker.rotation.x = -Math.PI / 2; checker.position.set((DOCK.x0 + DOCK.x1) / 2, 0.008, FZ - 0.45); scene.add(checker);
+for (const x of [DOCK.x0 + 0.1, DOCK.x1 - 0.1]) mbox(0.25, 0.3, 0.12, x, 0.55, FZ + 0.16, lam('#111'));
 /* Oficina con impresora */
 const offWall = lam('#dfe4ea'), glassMat = new THREE.MeshLambertMaterial({ color: '#a9cbe9', transparent: true, opacity: 0.3 });
 function offSeg(x0, z0, x1, z1) {
@@ -2063,17 +2108,29 @@ function offSeg(x0, z0, x1, z1) {
   mbox(len, 0.08, 0.12, cx, 2.62, cz, offWall).rotation.y = ry;
   obst(x0 - 0.05, x1 + 0.05, z0 - 0.05, z1 + 0.05);
 }
-offSeg(-9.95, 4.8, -6.8, 4.8); offSeg(-6.8, 4.8, -6.8, 5.2);
-mplane(1.4, 0.34, -6.72, 2.9, 5.9, Math.PI / 2, new THREE.MeshBasicMaterial({ map: canvasTex(320, 78, (g, w, h) => { g.fillStyle = '#1b2733'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '700 50px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('OFICINA', w / 2, h / 2 + 3); }) }));
-mbox(1.2, 0.75, 0.62, -8.6, 0.375, FZ - 0.45, lam('#9a7a55')); obst(-9.2, -8.0, FZ - 0.8, FZ - 0.1);
-const printer = mbox(0.5, 0.24, 0.42, -8.6, 0.87, FZ - 0.45, lam('#2b2f33')); printer.userData.action = 'print'; actionables.push(printer);
-mbox(0.36, 0.02, 0.18, -8.6, 0.99, FZ - 0.72, lam('#e9edf1'));
-const printLight = mbox(0.05, 0.02, 0.02, -8.42, 0.995, FZ - 0.25, new THREE.MeshBasicMaterial({ color: '#3fb96b' }));
-mplane(1.1, 1.3, -9.98, 1.75, 5.7, Math.PI / 2, new THREE.MeshBasicMaterial({ map: canvasTex(300, 354, (g, w, h) => { g.fillStyle = '#1d4f8f'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = '700 64px "Barlow Condensed", Arial, sans-serif'; g.fillText('Impresora', w / 2, 90); g.font = '500 34px "Barlow", sans-serif'; g.fillText('imprime sólo', w / 2, 200); g.fillText('lo necesario', w / 2, 244); }) }));
+offSeg(-9.95, 4.4, -6.8, 4.4); offSeg(-6.8, 4.4, -6.8, 4.8);
+mplane(1.4, 0.34, -6.72, 2.9, 5.7, Math.PI / 2, new THREE.MeshBasicMaterial({ map: canvasTex(320, 78, (g, w, h) => { g.fillStyle = '#1b2733'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = '700 50px "Barlow Condensed", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('OFICINA', w / 2, h / 2 + 3); }) }));
+/* Escritorio (0,74 m) con monitor, teclado y silla */
+const deskMat = lam('#9a7a55'), offDark = lam('#1d2126'), offSteel = lam('#8e979f');
+mbox(1.2, 0.04, 0.62, -8.6, 0.72, FZ - 0.45, deskMat); for (const x of [-9.15, -8.05]) mbox(0.05, 0.7, 0.58, x, 0.35, FZ - 0.45, lam('#6b5a44'));
+obst(-9.2, -8.0, FZ - 0.8, FZ - 0.1);
+mbox(0.5, 0.3, 0.03, -8.6, 1.0, FZ - 0.25, offDark); mbox(0.05, 0.12, 0.05, -8.6, 0.8, FZ - 0.25, offDark);
+mplane(0.46, 0.26, -8.6, 1.0, FZ - 0.264, Math.PI, new THREE.MeshBasicMaterial({ color: '#2f6fb3' }));
+mbox(0.42, 0.02, 0.14, -8.6, 0.75, FZ - 0.55, lam('#3a4148'));
+const chair = new THREE.Group(); chair.position.set(-8.6, 0, FZ - 1.15); scene.add(chair);
+mbox(0.46, 0.07, 0.44, 0, 0.47, 0, offDark, chair); mbox(0.44, 0.5, 0.06, 0, 0.8, -0.22, offDark, chair); mbox(0.05, 0.42, 0.05, 0, 0.23, 0, offSteel, chair);
+obst(-8.85, -8.35, FZ - 1.4, FZ - 0.9);
+/* Impresora láser sobre mueble bajo (bandeja de salida a 0,85 m) */
+const PR = { x: -7.55, z: FZ - 0.35 };
+mbox(0.55, 0.6, 0.45, PR.x, 0.3, PR.z, lam('#c9ced3')); obst(PR.x - 0.3, PR.x + 0.3, PR.z - 0.25, PR.z + 0.3);
+const printer = mbox(0.44, 0.24, 0.38, PR.x, 0.72, PR.z, lam('#2b2f33')); printer.userData.action = 'print'; actionables.push(printer);
+mbox(0.3, 0.015, 0.16, PR.x, 0.76, PR.z - 0.26, lam('#e9edf1'));
+const printLight = mbox(0.04, 0.015, 0.015, PR.x + 0.16, 0.845, PR.z - 0.19, new THREE.MeshBasicMaterial({ color: '#3fb96b' }));
+mplane(0.8, 0.95, PR.x, 1.55, FZ - 0.115, Math.PI, new THREE.MeshBasicMaterial({ map: canvasTex(300, 354, (g, w, h) => { g.fillStyle = '#1d4f8f'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = '700 64px "Barlow Condensed", Arial, sans-serif'; g.fillText('Impresora', w / 2, 90); g.font = '500 34px "Barlow", sans-serif'; g.fillText('imprime sólo', w / 2, 200); g.fillText('lo necesario', w / 2, 244); }) }));
 const paperTex = canvasTex(256, 360, () => {});
 const paper = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.297), new THREE.MeshBasicMaterial({ map: paperTex, side: THREE.DoubleSide }));
 paper.rotation.set(-1.15, 0, 0); paper.visible = false; paper.userData.action = 'paper'; scene.add(paper); actionables.push(paper);
-const PAPER_IN = new THREE.Vector3(-8.6, 0.95, FZ - 0.5), PAPER_OUT = new THREE.Vector3(-8.6, 1.02, FZ - 0.86);
+const PAPER_IN = new THREE.Vector3(PR.x, 0.8, PR.z - 0.05), PAPER_OUT = new THREE.Vector3(PR.x, 0.86, PR.z - 0.36);
 let printAnim = 0;
 function drawPaper(o) {
   const g = paperTex.userData.ctx, W = 256, H = 360;
@@ -2132,13 +2189,23 @@ function updateWrap(dt) {
 
 /* Transpaleta */
 const jackG = new THREE.Group(); scene.add(jackG);
-const jackRed = lam('#b3261e'), jackBlack = lam('#1d2126');
-mbox(0.56, 0.22, 0.32, 0, 0.2, 0.05, jackRed, jackG);
-for (const x of [-0.2, 0.2]) mbox(0.16, 0.07, 1.15, x, 0.05, -0.7, jackRed, jackG);
-const tiller = mbox(0.05, 1.05, 0.05, 0, 0.75, 0.3, jackBlack, jackG); tiller.rotation.x = 0.28;
-const tHandle = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.025, 8, 18), jackBlack); tHandle.position.set(0, 1.28, 0.45); jackG.add(tHandle);
-for (const x of [-0.12, 0.12]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 12), jackBlack); w.rotation.z = Math.PI / 2; w.position.set(x, 0.09, 0.12); jackG.add(w); }
-jackG.children.forEach(m => { m.userData.action = 'jack'; actionables.push(m); });
+const jackRed = lam('#c62828'), jackBlack = lam('#1d2126'), jackSteel = lam('#8e979f');
+/* Horquillas estándar: 1,15 m de largo, 540 mm de ancho total, 8 cm de alto */
+for (const x of [-0.19, 0.19]) {
+  mbox(0.16, 0.075, 1.12, x, 0.045, -0.62, jackRed, jackG);
+  mbox(0.12, 0.05, 0.08, x, 0.03, -1.2, jackRed, jackG);
+  const r = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 10), jackBlack); r.rotation.z = Math.PI / 2; r.position.set(x, 0.035, -1.08); jackG.add(r);
+}
+mbox(0.54, 0.12, 0.2, 0, 0.1, 0.02, jackRed, jackG);
+const pump = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.26, 12), jackSteel); pump.position.set(0, 0.29, 0.14); jackG.add(pump);
+mbox(0.2, 0.1, 0.16, 0, 0.2, 0.14, jackRed, jackG);
+for (const x of [-0.09, 0.09]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.05, 14), jackBlack); w.rotation.z = Math.PI / 2; w.position.set(x, 0.08, 0.2); jackG.add(w); }
+/* Timón delgado e inclinado hacia el operario; manilla pequeña (no tapa la vista) */
+const tillerG = new THREE.Group(); tillerG.position.set(0, 0.4, 0.18); tillerG.rotation.x = 0.55; jackG.add(tillerG);
+const tRod = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.78, 8), jackBlack); tRod.position.y = 0.39; tillerG.add(tRod);
+const tHandle = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 6, 16), jackBlack); tHandle.position.y = 0.85; tillerG.add(tHandle);
+mbox(0.04, 0.012, 0.05, 0, 0.8, 0.02, jackRed, tillerG);
+jackG.traverse(m => { if (m.isMesh) { m.userData.action = 'jack'; actionables.push(m); } });
 const jack = { x: 1.6, z: 4.0, h: 0, held: false, P: null };
 const gridTex = canvasTex(128, 96, (g, w, h) => { g.strokeStyle = '#69f0ae'; g.lineWidth = 3; for (let x = 0; x <= w; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y <= h; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } });
 const secureGrid = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), new THREE.MeshBasicMaterial({ map: gridTex, transparent: true, opacity: 0.9 }));
@@ -2173,7 +2240,7 @@ function jackFollow(snap) {
     jack.anchor = rp;
     const hd = head(); camera.getWorldDirection(_d); _d.y = 0; if (_d.lengthSq() < 1e-4) _d.set(0, 0, -1); _d.normalize();
     const h = Math.atan2(-_d.x, -_d.z);
-    for (const d of [1.3, 1.1, 0.95]) {
+    for (const d of [1.82, 1.6, 1.4]) {
       const jx = hd.x + _d.x * (d - 0.75), jz = hd.z + _d.z * (d - 0.75);
       if (jackSpotFree(jx, jz, h)) { jack.tx = jx; jack.tz = jz; jack.th = h; break; }
     }
@@ -2337,7 +2404,7 @@ function handRelease(i, via) {
   const o = state.order, P = o && o.pallet;
   if (P && jack.P === P) {
     const pc = jackPalletPt();
-    if (Math.hypot(_hv.x - pc.x, _hv.z - pc.z) < 1.1 && _hv.y > 0.05 && _hv.y < 2.3) { h.line.transit--; placeOnPallet(h.L, h.line, h.orig); return; }
+    if (Math.hypot(_hv.x - pc.x, _hv.z - pc.z) < 1.3 && _hv.y > 0.05 && _hv.y < 2.3) { h.line.transit--; placeOnPallet(h.L, h.line, h.orig); return; }
   }
   dropFloor(h, _hv.x, _hv.z);
 }
@@ -3123,6 +3190,14 @@ function snapTurn(angle) {
   rig.position.x += before.x - after.x; rig.position.z += before.z - after.z;
   placeCart(true);
 }
+function heightButtons() {
+  for (const c of ctrls) {
+    const gp = c.userData.gamepad, b = gp && gp.buttons && gp.buttons[4];
+    const p = !!(b && b.pressed);
+    if (p && !c.userData.hLatch) calibrateHeight(true);
+    c.userData.hLatch = p;
+  }
+}
 function xrInput() {
   for (const c of ctrls) {
     const gp = c.userData.gamepad; if (!gp || !gp.axes) continue;
@@ -3166,9 +3241,11 @@ renderer.xr.addEventListener('sessionstart', () => {
   btnVR.textContent = 'Salir de VR'; $('#pauseBadge').hidden = true; $('#modalActs').hidden = true;
   if (state.prompt) { $('#countCard').hidden = true; setTimeout(() => { placeCountPanel(); countPanel.visible = true; }, 400); }
   $('#modalResults').hidden = true;
+  setTimeout(() => calibrateHeight(false), 1500);
   setTimeout(() => { if (isFK()) { fk.headOff = { x: camera.position.x, z: camera.position.z }; $('#fkPad').hidden = true; } else if (!state.started) { const st = ACT().start || START; teleportTo(st.x, st.z, false); if (jack.held) jackFollow(true); } }, 400);
 });
 renderer.xr.addEventListener('sessionend', () => {
+  eyeFix = 0; if (!isFK()) rig.position.y = 0;
   camera.position.set(0, 1.6, 0); camera.quaternion.set(0, 0, 0, 1); pitch = 0; applyLook();
   toast3d.visible = false; btnVR.textContent = 'Entrar en VR'; state.anchor = null;
   resize();
@@ -3237,6 +3314,7 @@ renderer.setAnimationLoop(() => {
     if (lastPointer && !drag) { setRayFromEvent(lastPointer); const cl = classify(firstHit()); showHover(cl); canvas.style.cursor = isActive(cl) || (cl && cl.type === 'floor' && cl.ok) ? 'pointer' : 'grab'; }
   } else {
     if (isFK()) fkXrInputs(); else xrInput();
+    heightButtons();
     for (const c of ctrls) if (c.userData.gamepad !== null) showHover(rayFromCtrl(c));
   }
   if (isFK()) fkUpdate(dt);
